@@ -1,0 +1,142 @@
+---
+title: "sex_differences"
+author: "nbergum"
+date: "7/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(car)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(ggthemes)
+library(lme4)
+library(EnvStats)
+```
+
+```{r}
+sex_diff <- read.csv("C:\\Users\\nikbe\\Documents\\Vigh Lab\\morphine_sex_differences\\morphine_retina_cx_sex_diff.csv", fileEncoding = 'UTF-8-BOM')
+sex_diff$conc_wt <- (sex_diff$raw_conc/sex_diff$tissue_weight)
+sex_diff$log_conc_wt <- log(sex_diff$conc_wt)
+str(sex_diff)
+sex_diff
+
+#test for outliers
+test_out <- rosnerTest(sex_diff$conc_wt,
+  k = 4
+)
+test_out
+
+
+SumStat_sexdiff <- dplyr::summarise(group_by(sex_diff, tissue, stage),
+n = n(),
+mean_conc_wt = mean(conc_wt),
+sd_conc_wt = sd(conc_wt),
+se_conc_wt = sd_conc_wt/sqrt(n),
+log_conc = mean(log(conc_wt)),
+sd_conc_log = sd(log(conc_wt)),
+se_conc_log = sd_conc_log/sqrt(n),
+mean_wt = mean(body_wt),
+sd_wt = sd(body_wt),
+mean_dose = mean(dose),
+sd_dose = sd(dose),
+)
+
+SumStat_sexdiff
+
+plot_tissue <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=stage, y=mean_conc_wt, fill=tissue), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=stage,ymin=mean_conc_wt - se_conc_wt, ymax=mean_conc_wt + se_conc_wt, fill=tissue), position=position_dodge(width=0.5), width=.2,) + 
+  geom_point(data=sex_diff, aes(x=stage, y=conc_wt, fill=tissue), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)") + theme_bw()
+plot_tissue
+
+plot_stage <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_wt, fill=stage), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=mean_conc_wt - se_conc_wt, ymax=mean_conc_wt + se_conc_wt, fill=stage), position=position_dodge(width=0.5), width=.2,) + 
+  geom_point(data=sex_diff, aes(x=tissue, y=conc_wt, fill=stage), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)") + theme_bw()
+plot_stage
+
+plot_tissueL <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=stage, y=log_conc, fill=tissue), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=stage,ymin=log_conc - se_conc_log, ymax=log_conc + se_conc_log, fill=tissue), position=position_dodge(width=0.5), width=.2,) +  geom_point(data=sex_diff, aes(x=stage, y=log_conc_wt, fill=tissue), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))") + theme_bw()
+plot_tissueL
+
+plot_stageL <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=log_conc, fill=stage), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=log_conc - se_conc_log, ymax=log_conc + se_conc_log, fill=stage), position=position_dodge(width=0.5), width=.2,) +  geom_point(data=sex_diff, aes(x=tissue, y=log_conc_wt, fill=stage), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))") + theme_bw()
+plot_stageL
+```
+
+```{r}
+#sex_diff$stage <- as.factor(sex_diff$stage)
+lmer_diff <- lmer(log(conc_wt) ~ stage*tissue+(1|animal), data =sex_diff)
+plot(lmer_diff, type=c("p","smooth"), col.line=1)
+lattice::qqmath(lmer_diff)
+anova(lmer_diff)
+emmeans::emmeans(lmer_diff, pairwise ~ tissue| stage)
+emmeans::emmeans(lmer_diff, pairwise ~ stage| tissue)
+shapiro.test(resid(lmer_diff))
+```
+Seperate out littermates and rerun stats
+```{r}
+litter <- subset(sex_diff,  animal %in% c("1M","2M","3M","4M","5M","6M","7M","8M","9M","18F","19F","20F","21F","22F","24F","25F","26F"))
+litter
+lmer_litt <- lmer(log(conc_wt) ~ stage*tissue+(1|animal), data =litter)
+plot(lmer_litt, type=c("p","smooth"), col.line=1)
+lattice::qqmath(lmer_litt)
+anova(lmer_litt)
+emmeans::emmeans(lmer_litt, pairwise ~ tissue| stage)
+emmeans::emmeans(lmer_litt, pairwise ~ stage| tissue)
+shapiro.test(resid(lmer_litt))
+```
+
+```{r}
+SumStat_sexlitt <- dplyr::summarise(group_by(litter, tissue, stage),
+n = n(),
+mean_conc_wt = mean(conc_wt),
+sd_conc_wt = sd(conc_wt),
+se_conc_wt = sd_conc_wt/sqrt(n),
+log_conc = mean(log(conc_wt)),
+sd_conc_log = sd(log(conc_wt)),
+se_conc_log = sd_conc_log/sqrt(n),
+mean_wt = mean(body_wt),
+sd_wt = sd(body_wt),
+mean_dose = mean(dose),
+sd_dose = sd(dose),
+)
+
+SumStat_sexlitt
+
+plot_tissue_litt <- ggplot() + 
+  geom_bar(data=SumStat_sexlitt, aes(x=stage, y=mean_conc_wt, fill=tissue), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexlitt, aes(x=stage,ymin=mean_conc_wt - se_conc_wt, ymax=mean_conc_wt + se_conc_wt, fill=tissue), position=position_dodge(width=0.5), width=.2,) + 
+  geom_point(data=litter, aes(x=stage, y=conc_wt, fill=tissue), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)") + theme_bw()
+plot_tissue_litt
+
+plot_stage_litt <- ggplot() + 
+  geom_bar(data=SumStat_sexlitt, aes(x=tissue, y=mean_conc_wt, fill=stage), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexlitt, aes(x=tissue,ymin=mean_conc_wt - se_conc_wt, ymax=mean_conc_wt + se_conc_wt, fill=stage), position=position_dodge(width=0.5), width=.2,) + 
+  geom_point(data=litter, aes(x=tissue, y=conc_wt, fill=stage), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)") + theme_bw()
+plot_stage_litt
+
+plot_tissueL_litt <- ggplot() + 
+  geom_bar(data=SumStat_sexlitt, aes(x=stage, y=log_conc, fill=tissue), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexlitt, aes(x=stage,ymin=log_conc - se_conc_log, ymax=log_conc + se_conc_log, fill=tissue), position=position_dodge(width=0.5), width=.2,) +  geom_point(data=litter, aes(x=stage, y=log_conc_wt, fill=tissue), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))") + theme_bw()
+plot_tissueL_litt
+
+plot_stageL_litt <- ggplot() + 
+  geom_bar(data=SumStat_sexlitt, aes(x=tissue, y=log_conc, fill=stage), stat="identity", position=position_dodge(width=0.5), width=0.5) +
+  geom_errorbar(data=SumStat_sexlitt, aes(x=tissue,ymin=log_conc - se_conc_log, ymax=log_conc + se_conc_log, fill=stage), position=position_dodge(width=0.5), width=.2,) +  geom_point(data=litter, aes(x=tissue, y=log_conc_wt, fill=stage), position=position_dodge(width=0.5)) +
+  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))") + theme_bw()
+plot_stageL_litt
+```
