@@ -1,5 +1,5 @@
 ---
-title: "Transporter  (P-gp) Colocalization Analysis (ImageJ Coloc2)"
+title: "Transporter (Mrp2) Colocalization Analysis (ImageJ Coloc2)"
 author: "CT Berezin"
 date: "2022-08-18"
 output: pdf_document
@@ -133,3 +133,31 @@ coloc2 %>% ggplot(aes(x=coloc, y=m2)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   geom_point(aes(color=mouseID))
 ```
+
+```{r}
+head(coloc2)
+coloc2_long <- coloc2 %>% pivot_longer(cols = m1:m2, names_to = "m_stat_type", values_to = "m_stat_val")
+coloc2_long <- coloc2_long %>% group_by(mouseID, coloc, m_stat_type) %>%
+  summarise(m_stat_type = as.factor(m_stat_type),
+            m_mean = mean(m_stat_val),
+             m_sd = sd(m_stat_val),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n())
+             #n_coloc = sum(coloc))
+
+ggplot(coloc2_long, aes(x=coloc, y=m_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.2) + 
+  geom_point() +
+  facet_wrap(~m_stat_type)
+
+
+ggplot(coloc2_long, aes(x=coloc, y=r_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.2) + 
+  geom_point()
+```
+
