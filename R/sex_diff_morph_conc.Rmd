@@ -18,7 +18,7 @@ library(EnvStats)
 ```
 
 ```{r}
-sex_diff <- read.csv("C:\\Users\\nikbe\\Documents\\Vigh Lab\\morphine_sex_differences\\morphine_retina_cx_sex_diff.csv", fileEncoding = 'UTF-8-BOM')
+sex_diff <- read.csv("../data/morphine_retina_cx_sex_diff.csv", fileEncoding = 'UTF-8-BOM')
 sex_diff$conc_wt <- (sex_diff$raw_conc/sex_diff$tissue_weight)
 sex_diff$log_conc_wt <- log(sex_diff$conc_wt)
 str(sex_diff)
