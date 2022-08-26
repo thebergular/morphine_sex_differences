@@ -1,0 +1,38 @@
+Working on: M-McKO-92-section1-40x-5_gcl1
+!!! WARNINGS !!!
+Warning! Zero-zero ratio too high - The ratio between zero-zero pixels and other pixels is large: 0.49. Maybe you should use a ROI.
+Warning! y-intercept far from zero - The ratio of the y-intercept of the auto threshold regression line to the mean value of Channel 2 is high. This means the y-intercept is far from zero, implying a significant positive or negative zero offset in the image data intensities. Maybe you should use a ROI. Maybe do a background subtraction in both channels. Make sure you didn't clip off the low intensities to zero. This might not affect Pearson's correlation values very much, but might harm other results.
+Warning! Threshold of ch. 1 too high - Too few pixels are taken into account for above-threshold calculations. The threshold is above the channel's mean.
+Warning! Threshold of ch. 2 too high - Too few pixels are taken into account for above-threshold calculations. The threshold is above the channel's mean.
+RESULTS:
+Coloc_Job_Name, Colocalization_of_M-McKO-92-section1-40x-5_gcl1_occludin.tif_versus_M-McKO-92-section1-40x-5_gcl1_mrp2.tif_1452793676
+% zero-zero pixels, 48.58
+% saturated ch1 pixels, 0.00
+% saturated ch2 pixels, 0.00
+Channel 1 Max, 106.000
+Channel 2 Max, 191.000
+Channel 1 Min, 0.000
+Channel 2 Min, 0.000
+Channel 1 Mean, 1.537
+Channel 2 Mean, 13.224
+Channel 1 Integrated (Sum) Intensity, 519389.000
+Channel 2 Integrated (Sum) Intensity, 4469851.000
+Mask Type Used, none
+Mask ID Used, 1452793676
+m (slope), 26.42
+b (y-intercept), -27.38
+b to y-mean ratio, -2.07
+Ch1 Max Threshold, 2.00
+Ch2 Max Threshold, 24.00
+Threshold regression, Costes
+Pearson's R value (no threshold), 0.15
+Pearson's R value (below threshold), -0.00
+Pearson's R value (above threshold), -0.33
+Manders' M1 (Above zero intensity of Ch2), 0.802
+Manders' M2 (Above zero intensity of Ch1), 0.545
+Manders' tM1 (Above autothreshold of Ch2), 0.391
+Manders' tM2 (Above autothreshold of Ch1), 0.415
+Costes P-Value, 1.00
+Costes Shuffled Mean, -0.01
+Costes Shuffled Std.D., 0.03
+Ratio of rand. Pearsons >= actual Pearsons value , 0.00

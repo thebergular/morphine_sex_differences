@@ -1,0 +1,163 @@
+---
+title: "Transporter (Mrp2) Colocalization Analysis (ImageJ Coloc2)"
+author: "CT Berezin"
+date: "2022-08-18"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(openxlsx)
+```
+
+
+```{r}
+filelist <- list.files(path="../../data/IHC/coloc2_results_mrp2/", pattern="*.txt", full.names = TRUE)
+cols <- c("sample", "m1", "m2", "r_pearson", "Pval", "r_rand", "sd_rand")
+coloc2 <- as.data.frame(matrix(,1,length(cols)))
+names(coloc2) <- cols
+
+for (i in filelist) {
+  test <- read_lines(i)
+  sample <- str_subset(test, "Working on") %>% str_extract(., "(?<=:[:space:]).*")
+  r_pearson <- str_subset(test, "no threshold") %>% str_extract(., "(?<=,[:space:]).*")
+  m1 <- str_subset(test, "tM1") %>% str_extract(., "(?<=,[:space:]).*")
+  m2 <- str_subset(test, "tM2") %>% str_extract(., "(?<=,[:space:]).*")
+  Pval <- str_subset(test, "P-Value") %>% str_extract(., "(?<=,[:space:]).*")
+  r_rand <- str_subset(test, "Costes Shuffled Mean") %>% str_extract(., "(?<=,[:space:]).*")
+  sd_rand <- str_subset(test, "Costes Shuffled Std") %>% str_extract(., "(?<=,[:space:]).*")
+  res <- c(all_of(sample), all_of(m1), all_of(m2), all_of(r_pearson), all_of(Pval), all_of(r_rand), all_of(sd_rand))
+  coloc2 <- rbind(coloc2, res)
+}
+
+coloc2 <- coloc2 %>% na.omit(coloc2) %>%
+  mutate(sex = as.factor(str_sub(sample, start=1L, end=1L)),
+          mouseID = as.factor(str_extract(sample, "(?<=-)[:digit:]+")),
+          image = str_extract(sample, "s.*(?=_)"),
+          roi = str_extract(sample, "(?<=_).*"), .before=m1)
+
+coloc2 <- coloc2 %>% select(-sample) %>%
+  mutate(m1 = as.double(m1),
+        m2 = as.double(m2),
+        r_pearson = as.double(r_pearson),
+        Pval = as.double(Pval),
+        r_rand = as.double(r_rand),
+        sd_rand = as.double(sd_rand),
+        coloc = Pval>0.95)
+
+#write.xlsx(coloc2, "../../data/IHC/coloc2-mrp2-totals.xlsx")
+
+head(coloc2)
+```
+
+```{r}
+sumstats <- coloc2 %>% summarise(m1_mean = mean(m1),
+                     m1_sd = sd(m1),
+                     m2_mean = mean(m2),
+                     m2_sd = sd(m2),
+                     r_mean = mean(r_pearson),
+                     r_sd = sd(r_pearson),
+                     n_total = n(),
+                     n_coloc = sum(coloc)
+                     )
+sumstats
+
+sumstats_animals <- coloc2 %>% group_by(mouseID) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+sumstats_animals
+
+sumstats_sex <- coloc2 %>% group_by(sex) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+sumstats_sex
+
+sumstats_coloc <- coloc2 %>% group_by(coloc) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             mean_P = mean(Pval)
+             )
+sumstats_coloc
+```
+
+M1 = occludin overlapping mrp2
+M2 = mrp2 overlapping occludin
+
+
+```{r}
+coloc2$coloc <- as.factor(coloc2$coloc)
+
+#coin::wilcox_test(coloc2$r_pearson ~ coloc2$coloc, conf.int=TRUE)
+coin::wilcox_test(coloc2$r_pearson ~ coloc2$coloc, conf.int=TRUE, distribution="exact")
+#coin::wilcox_test(coloc2$m1 ~ coloc2$coloc, conf.int=TRUE)
+coin::wilcox_test(coloc2$m1 ~ coloc2$coloc, conf.int=TRUE, distribution="exact")
+#coin::wilcox_test(coloc2$m2 ~ coloc2$coloc, conf.int=TRUE)
+coin::wilcox_test(coloc2$m2 ~ coloc2$coloc, conf.int=TRUE, distribution="exact")
+
+#coin::wilcox_test(coloc2$r_pearson ~ coloc2$sex, conf.int=TRUE)
+#coin::wilcox_test(coloc2$m1 ~ coloc2$sex, conf.int=TRUE)
+#coin::wilcox_test(coloc2$m2 ~ coloc2$sex, conf.int=TRUE)
+```
+
+
+```{r}
+coloc2 %>% ggplot(aes(x=coloc, y=r_pearson)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  geom_point(aes(color=mouseID))
+
+coloc2 %>% ggplot(aes(x=coloc, y=m1)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  geom_point(aes(color=mouseID))
+
+coloc2 %>% ggplot(aes(x=coloc, y=m2)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  geom_point(aes(color=mouseID))
+```
+
+```{r}
+head(coloc2)
+coloc2_long <- coloc2 %>% pivot_longer(cols = m1:m2, names_to = "m_stat_type", values_to = "m_stat_val")
+coloc2_long <- coloc2_long %>% group_by(mouseID, coloc, m_stat_type) %>%
+  summarise(m_stat_type = as.factor(m_stat_type),
+            m_mean = mean(m_stat_val),
+             m_sd = sd(m_stat_val),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n())
+             #n_coloc = sum(coloc))
+
+ggplot(coloc2_long, aes(x=coloc, y=m_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.2) + 
+  geom_point() +
+  facet_wrap(~m_stat_type)
+
+
+ggplot(coloc2_long, aes(x=coloc, y=r_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.2) + 
+  geom_point()
+```
+

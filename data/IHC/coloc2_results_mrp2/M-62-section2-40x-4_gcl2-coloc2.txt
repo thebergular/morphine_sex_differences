@@ -1,0 +1,38 @@
+Working on: M-62-section2-40x-4_gcl2
+!!! WARNINGS !!!
+Warning! Zero-zero ratio too high - The ratio between zero-zero pixels and other pixels is large: 0.56. Maybe you should use a ROI.
+Warning! y-intercept far from zero - The ratio of the y-intercept of the auto threshold regression line to the mean value of Channel 2 is high. This means the y-intercept is far from zero, implying a significant positive or negative zero offset in the image data intensities. Maybe you should use a ROI. Maybe do a background subtraction in both channels. Make sure you didn't clip off the low intensities to zero. This might not affect Pearson's correlation values very much, but might harm other results.
+Warning! Threshold of ch. 2 too high - Too few pixels are taken into account for above-threshold calculations. The threshold is above the channel's mean.
+Warning! thresholds too low - The auto threshold method could not find a positive threshold, so thresholded results are meaningless.
+RESULTS:
+Coloc_Job_Name, Colocalization_of_M-62-section2-40x-4_gcl2_occludin.tif_versus_M-62-section2-40x-4_gcl2_mrp2.tif_703561414
+% zero-zero pixels, 56.19
+% saturated ch1 pixels, 0.15
+% saturated ch2 pixels, 0.27
+Channel 1 Max, 255.000
+Channel 2 Max, 199.000
+Channel 1 Min, 0.000
+Channel 2 Min, 0.000
+Channel 1 Mean, 3.314
+Channel 2 Mean, 5.532
+Channel 1 Integrated (Sum) Intensity, 702496.000
+Channel 2 Integrated (Sum) Intensity, 1172749.000
+Mask Type Used, none
+Mask ID Used, 703561414
+m (slope), -2.28
+b (y-intercept), 13.08
+b to y-mean ratio, 2.36
+Ch1 Max Threshold, 0.00
+Ch2 Max Threshold, 199.00
+Threshold regression, Costes
+Pearson's R value (no threshold), -0.05
+Pearson's R value (below threshold), -0.05
+Pearson's R value (above threshold), -0.11
+Manders' M1 (Above zero intensity of Ch2), 0.187
+Manders' M2 (Above zero intensity of Ch1), 0.258
+Manders' tM1 (Above autothreshold of Ch2), 0.001
+Manders' tM2 (Above autothreshold of Ch1), 0.258
+Costes P-Value, 0.10
+Costes Shuffled Mean, -0.00
+Costes Shuffled Std.D., 0.04
+Ratio of rand. Pearsons >= actual Pearsons value , 1.09
