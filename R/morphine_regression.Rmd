@@ -1,0 +1,157 @@
+---
+title: "morphine_regression"
+author: "nbergum"
+date: "7/25/2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=3, fig.height=3) 
+library(dplyr)
+library(ggplot2)
+library(car)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(ggthemes)
+library(lme4)
+library(EnvStats)
+library(nortest)
+library(svglite)
+```
+
+```{r}
+regression <- read.csv("../data/morphine__sex_diff_transporters.csv", fileEncoding = 'UTF-8-BOM')
+
+regression$conc_wt <- (regression$raw_conc/regression$tissue_weight)
+
+str(regression)
+
+regression <- regression %>% mutate(stage = as.factor(stage),
+                                    group = as.factor(group),
+                                    tissue = factor(as.factor(tissue), c("retina", "brain"))
+                                    )
+head(regression)
+```
+
+```{r}
+pgp_plot <- ggplot(regression, aes(pgp, conc_wt, col=tissue)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = T) +
+  xlim(0,5) +
+  theme_bw()
+
+bcrp_plot <- ggplot(regression, aes(bcrp, conc_wt, col=tissue)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = T) +
+  xlim(0,5) +
+  ylab("") +
+  theme_bw() %+replace%
+  theme(axis.text.y=element_blank())
+
+combined_correlation_plots <- ggarrange(pgp_plot, bcrp_plot, ncol=2, common.legend = TRUE, legend="bottom")
+
+ggsave("../figures/combined_correlation_plots.png", plot=combined_correlation_plots, width=6, height =4)
+
+```
+
+```{r}
+regression_brain <- subset(regression, tissue == "brain")
+head(regression_brain)
+
+shapiro.test(regression_brain$conc_wt)
+shapiro.test(regression_brain$pgp)
+
+plot(regression_brain$pgp, regression_brain$conc_wt)
+abline(0,1)
+plot(regression_brain$pgp, log(regression_brain$conc_wt))
+abline(-2,1)
+plot(log2(regression_brain$pgp), log(regression_brain$conc_wt))
+abline(-1,1)
+
+cor.test(regression_brain$pgp, regression_brain$conc_wt, method = "pearson")
+cor.test(regression_brain$pgp, regression_brain$conc_wt, method = "spearman")
+```
+
+```{r}
+shapiro.test(regression_brain$bcrp)
+
+plot(regression_brain$bcrp, regression_brain$conc_wt)
+abline(1,1)
+plot(regression_brain$bcrp, log(regression_brain$conc_wt))
+abline(0,1)
+plot(log2(regression_brain$bcrp), log(regression_brain$conc_wt))
+abline(0.5,1)
+
+cor.test(regression_brain$bcrp, regression_brain$conc_wt, method = "pearson")
+cor.test(regression_brain$bcrp, regression_brain$conc_wt, method = "spearman")
+```
+
+```{r}
+regression_retina <- subset(regression, tissue == "retina")
+head(regression_retina)
+
+shapiro.test(regression_retina$conc_wt)
+shapiro.test(regression_retina$pgp)
+
+plot(regression_retina$pgp, regression_retina$conc_wt)
+abline(20,1)
+plot(regression_retina$pgp, log(regression_retina$conc_wt))
+abline(2,1)
+plot(log2(regression_retina$pgp), log(regression_retina$conc_wt))
+abline(3,1)
+
+cor.test(regression_retina$pgp, regression_retina$conc_wt, method = "pearson")
+cor.test(regression_retina$pgp, regression_retina$conc_wt, method = "spearman")
+```
+
+```{r}
+shapiro.test(regression_retina$bcrp)
+
+plot(regression_retina$bcrp, regression_retina$conc_wt)
+abline(20,1)
+plot(regression_retina$bcrp, log(regression_retina$conc_wt))
+abline(2,1)
+plot(log2(regression_retina$bcrp), log(regression_retina$conc_wt))
+abline(3,1)
+
+cor.test(regression_retina$bcrp, regression_retina$conc_wt, method = "pearson")
+cor.test(regression_retina$bcrp, regression_retina$conc_wt, method = "spearman")
+```
+
+```{r}
+lm_ex1 <- lm(conc_wt ~ pgp*tissue + bcrp*tissue, data = regression)
+plot(lm_ex1, which=c(1,2))
+lm_ex <- lm(log(conc_wt) ~ log2(pgp)*tissue + log2(bcrp)*tissue, data = regression)
+plot(lm_ex, which=c(1,2))
+
+summary(lm_ex)$coefficient
+
+
+
+pgp_subset <- regression %>% select(-bcrp)
+bcrp_subset <- regression %>% select(-pgp)
+
+#untransformed
+#lm_pgp <- lm(conc_wt ~ pgp * tissue, data=pgp_subset)
+#plot(lm_pgp, which=c(1,2))
+
+#concentration log transformed
+lm_pgp_log <- lm(log(conc_wt) ~ pgp * tissue, data=pgp_subset)
+plot(lm_pgp_log, which=c(1,2))
+
+#pgp log transformed
+#lm_pgp_log1 <- lm(conc_wt ~ log2(pgp) * tissue, data=pgp_subset)
+#plot(lm_pgp_loglog, which=c(1,2))
+
+#both transformed
+lm_pgp_loglog <- lm(log(conc_wt) ~ log2(pgp) * tissue, data=pgp_subset)
+plot(lm_pgp_loglog, which=c(1,2))
+
+summary(lm_pgp_log)
+anova(lm_pgp_log)
+
+emmeans::emmeans(lm_pgp_log, pairwise ~ tissue)$contrasts
+```
