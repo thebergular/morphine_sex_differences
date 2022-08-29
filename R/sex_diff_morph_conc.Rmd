@@ -24,8 +24,11 @@ Visualizations for potential sex and tissue-dependent differences
 sex_diff <- read.csv("../data/morphine_retina_cx_sex_diff.csv", fileEncoding = 'UTF-8-BOM')
 sex_diff$conc_wt <- (sex_diff$raw_conc/sex_diff$tissue_weight)
 sex_diff$log_conc_wt <- log(sex_diff$conc_wt)
+
+sex_diff <- sex_diff %>% mutate(tissue = factor(as.factor(tissue), c("retina", "brain")),
+                                group = factor(as.factor(group), c("male", "lowE", "highE")))
+
 str(sex_diff)
-sex_diff
 
 #test for outliers
 test_out <- rosnerTest(sex_diff$conc_wt,
@@ -50,49 +53,80 @@ sd_dose = sd(dose),
 
 SumStat_sexdiff
 
-plot_tissue <- ggplot() + 
-  geom_bar(data=SumStat_sexdiff, aes(x=group, y=mean_conc_wt, fill=tissue), stat="identity", position=position_dodge(width=0.5), width=0.5) +
-  geom_errorbar(data=SumStat_sexdiff, aes(x=group,ymin=mean_conc_wt - se_conc_wt, ymax=mean_conc_wt + se_conc_wt, fill=tissue), position=position_dodge(width=0.5), width=.2,) + 
-  geom_point(data=sex_diff, aes(x=group, y=conc_wt, fill=tissue), position=position_dodge(width=0.5)) +
-  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)") + theme_bw()
-plot_tissue
 
-ggsave("plot_tissue.svg", plot=plot_tissue, width=5, height =4)
+```
+
+```{r}
+plot_tissue <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=group, y=mean_conc_wt, fill=tissue),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=group, ymin=mean_conc_wt - se_conc_wt,
+                                      ymax=mean_conc_wt + se_conc_wt, fill=tissue),
+                position=position_dodge(width=0.75), width=.2) + 
+  geom_point(data=sex_diff, aes(x=group, y=conc_wt, fill=tissue),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)",
+                     expand = expansion(mult = c(0, 0.2))) +
+  theme_bw()
+
+plot_tissue
+#ggsave("../figures/conc_tissue.svg", plot=plot_tissue, width=6, height =4)
 
 plot_stage <- ggplot() + 
-  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_wt, fill=group), stat="identity", position=position_dodge(width=0.5), width=0.5) +
-  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=mean_conc_wt - se_conc_wt, ymax=mean_conc_wt + se_conc_wt, fill=group), position=position_dodge(width=0.5), width=.2,) + 
-  geom_point(data=sex_diff, aes(x=tissue, y=conc_wt, fill=group), position=position_dodge(width=0.5)) +
-  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)") + theme_bw()
-plot_stage
+  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_wt, fill=group),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=mean_conc_wt - se_conc_wt,
+                                      ymax=mean_conc_wt + se_conc_wt, fill=group),
+                position=position_dodge(width=0.75), width=.2) + 
+  geom_point(data=sex_diff, aes(x=tissue, y=conc_wt, fill=group),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="Morphine concentration per mg tissue (ng/mg)",
+                     expand = expansion(mult = c(0, 0.2))) +
+  theme_bw()
 
-ggsave("plot_stage.svg", plot=plot_stage, width=5, height =4)
+plot_stage
+#ggsave("../figures/conc_stage.svg", plot=plot_stage, width=6, height =4)
 
 plot_tissueL <- ggplot() + 
-  geom_bar(data=SumStat_sexdiff, aes(x=group, y=log_conc, fill=tissue), stat="identity", position=position_dodge(width=0.5), width=0.5) +
-  geom_errorbar(data=SumStat_sexdiff, aes(x=group,ymin=log_conc - se_conc_log, ymax=log_conc + se_conc_log, fill=tissue), position=position_dodge(width=0.5), width=.2,) +  geom_point(data=sex_diff, aes(x=group, y=log_conc_wt, fill=tissue), position=position_dodge(width=0.5)) +
-  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))") + theme_bw()
-plot_tissueL
+  geom_bar(data=SumStat_sexdiff, aes(x=group, y=log_conc, fill=tissue),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=group,ymin=log_conc - se_conc_log,
+                                      ymax=log_conc + se_conc_log, fill=tissue),
+                position=position_dodge(width=0.75), width=.2) +
+  geom_point(data=sex_diff, aes(x=group, y=log_conc_wt, fill=tissue),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))",
+                     expand = expansion(mult = c(0, 0.2))) +
+  theme_bw()
 
-ggsave("plot_tissueL.svg", plot=plot_tissueL, width=5, height =4)
+plot_tissueL
+#ggsave("../figures/conc_tissue_log.svg", plot=plot_tissueL, width=6, height =4)
 
 plot_stageL <- ggplot() + 
-  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=log_conc, fill=group), stat="identity", position=position_dodge(width=0.5), width=0.5) +
-  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=log_conc - se_conc_log, ymax=log_conc + se_conc_log, fill=group), position=position_dodge(width=0.5), width=.2,) +  geom_point(data=sex_diff, aes(x=tissue, y=log_conc_wt, fill=group), position=position_dodge(width=0.5)) +
-  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))") + theme_bw()
-plot_stageL
+  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=log_conc, fill=group),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=log_conc - se_conc_log,
+                                          ymax=log_conc + se_conc_log, fill=group),
+                position=position_dodge(width=0.75), width=.2) +
+  geom_point(data=sex_diff, aes(x=tissue, y=log_conc_wt, fill=group),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="ln(Morphine concentration per mg tissue (ng/mg))",
+                     expand = expansion(mult = c(0, 0.2))) +
+  theme_bw()
 
-ggsave("plot_stageL.svg", plot=plot_stageL, width=5, height =4)
+plot_stageL
+#ggsave("../figures/conc_stage_log.svg", plot=plot_stageL, width=6, height =4)
 ```
+
 Analysis for differences between groups and tissues
+
 ```{r}
-#sex_diff$stage <- as.factor(sex_diff$stage)
 lmer_diff <- lmer(log(conc_wt) ~ group*tissue+(1|animal), data =sex_diff)
 plot(lmer_diff, type=c("p","smooth"), col.line=1)
 lattice::qqmath(lmer_diff)
-anova(lmer_diff)
-emmeans::emmeans(lmer_diff, pairwise ~ tissue| group)
-emmeans::emmeans(lmer_diff, pairwise ~ group| tissue)
+Anova(lmer_diff, type="3")
+emmeans::emmeans(lmer_diff, pairwise ~ tissue| group)$contrasts
+emmeans::emmeans(lmer_diff, pairwise ~ group| tissue)$contrasts
 shapiro.test(resid(lmer_diff))
 ```
 Sex differences analysis exclusively for animals that were littermates
