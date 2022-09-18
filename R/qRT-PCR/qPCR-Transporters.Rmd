@@ -32,28 +32,139 @@ transporters <- transporters %>% mutate(Tissue = str_sub(Sample, start=-3L, end=
 transporters <- transporters %>% mutate(Treatment = factor(Treatment, c("S", "M", "Flo", "Fhi", "C")),
                                         Tissue = factor(Tissue, c("ret", "hyp")))
 
+head(transporters)
+
 transporters_long <- transporters %>% pivot_longer(cols=c("Pgp.RGE", "Bcrp.RGE"), names_to = "gene", values_to="rge")
 
 transporters_long <- transporters_long %>% mutate(gene = str_extract(gene, "[:alpha:]+(?=.)"))
 transporters_long <- transporters_long %>% mutate(gene = factor(as.factor(gene), c("Pgp", "Bcrp")))
+
+
+head(transporters_long)
 ```
 
-## Comparing chronic saline/morphine for Bcrp (repeat of P-gp, Bergum 2022)
+## Comparing chronic saline/morphine for Bcrp (rerun of samples for P-gp from Bergum 2022)
 
 ```{r}
-chronic <- transporters_long %>% filter(Treatment %in% c("C", "S"))
+#bcrp only
+chronic <- transporters %>% filter(Treatment %in% c("C", "S"))
 chronic
 
-chronic_lm <- lmer(rge ~ gene * Tissue * Treatment + (1|Sample), data=chronic)
+c_bcrp_lm <- lmer(Bcrp.RGE ~ Tissue * Treatment + (1|Sample), data=chronic)
+plot(c_bcrp_lm, type=c("p","smooth"), col.line=1)
+lattice::qqmath(c_bcrp_lm)
+
+c_bcrp_log2_lm <- lmer(log2(Bcrp.RGE) ~ Tissue * Treatment + (1|Sample), data=chronic)
+plot(c_bcrp_log2_lm, type=c("p","smooth"), col.line=1)
+lattice::qqmath(c_bcrp_log2_lm)
+
+shapiro.test(chronic$Bcrp.RGE)
+shapiro.test(log2(chronic$Bcrp.RGE))
+
+anova(c_bcrp_log2_lm)
+
+emmeans::emmeans(c_bcrp_log2_lm, pairwise ~ Treatment | Tissue)$contrasts
+emmeans::emmeans(c_bcrp_log2_lm, pairwise ~ Tissue | Treatment)$contrasts
+
+
+c_bcrp_sumstats <- chronic %>% group_by(Treatment, Tissue) %>% summarise(
+  n = n(),
+  mean = mean(Bcrp.RGE),
+  sd = sd(Bcrp.RGE),
+  log2_mean = mean(log2(Bcrp.RGE)),
+  log2_sd = sd(log2(Bcrp.RGE))
+)
+c_bcrp_sumstats
+
+#treatment plots
+c_bcrp_plot <- ggplot() +
+  stat_summary(data=chronic, aes(x=Treatment, y=Bcrp.RGE, fill=Tissue),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=mean-sd,
+                                           ymax=mean+sd, fill=Tissue),
+                width=0.2, position=position_dodge(width=0.75)) +
+  geom_point(data=chronic, aes(x=Treatment, y=Bcrp.RGE, fill=Tissue),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_grid(~Tissue, scales="free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  #scale_fill_manual(values=c("maroon1", "springgreen3")) +
+  theme_bw(base_size = 14)
+
+c_bcrp_plot
+
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_plot.svg", plot=c_bcrp_plot, height=4, width=6, bg="transparent")
+
+c_bcrp_log_plot <- ggplot() +
+  stat_summary(data=chronic, aes(x=Treatment, y=log2(Bcrp.RGE), fill=Tissue),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
+                                         ymax=log2_mean+log2_sd, fill=Tissue),
+                width=0.2, position=position_dodge(width=0.75)) +
+  geom_point(data=chronic, aes(x=Treatment, y=log2(Bcrp.RGE), fill=Tissue),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_grid(~Tissue, scales="free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  #scale_fill_manual(values=c("maroon1", "springgreen3")) +
+  theme_bw(base_size = 14)
+
+c_bcrp_log_plot
+
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_log_plot.g", plot=c_bcrp_log_plot, height=4, width=6, bg="transparent")
+
+
+#tissue plots
+c_bcrp_tiss_plot <- ggplot() +
+  stat_summary(data=chronic, aes(x=Tissue, y=Bcrp.RGE, fill=Treatment),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=c_bcrp_sumstats, aes(x=Tissue, ymin=mean-sd,
+                                           ymax=mean+sd, fill=Treatment),
+                width=0.2, position=position_dodge(width=0.75)) +
+  geom_point(data=chronic, aes(x=Tissue, y=Bcrp.RGE, fill=Treatment),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_grid(~Treatment, scales="free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  #scale_fill_manual(values=c("maroon1", "springgreen3")) +
+  theme_bw(base_size = 14)
+
+c_bcrp_tiss_plot
+
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_plot.svg", plot=c_bcrp_tiss_plot, height=4, width=6, bg="transparent")
+
+c_bcrp_tiss_log_plot <- ggplot() +
+  stat_summary(data=chronic, aes(x=Tissue, y=log2(Bcrp.RGE), fill=Treatment),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=c_bcrp_sumstats, aes(x=Tissue, ymin=log2_mean-log2_sd,
+                                         ymax=log2_mean+log2_sd, fill=Treatment),
+                width=0.2, position=position_dodge(width=0.75)) +
+  geom_point(data=chronic, aes(x=Tissue, y=log2(Bcrp.RGE), fill=Treatment),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_grid(~Treatment, scales="free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  #scale_fill_manual(values=c("maroon1", "springgreen3")) +
+  theme_bw(base_size = 14)
+
+c_bcrp_tiss_log_plot
+
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_log_plot.svg", plot=c_bcrp_tiss_log_plot, height=4, width=6, bg="transparent")
+
+```
+
+
+```{r}
+#bcrp & pgp together
+chronic_long <- transporters_long %>% filter(Treatment %in% c("C", "S"))
+chronic_long
+
+chronic_lm <- lmer(rge ~ gene * Tissue * Treatment + (1|Sample), data=chronic_long)
 plot(chronic_lm, type=c("p","smooth"), col.line=1)
 lattice::qqmath(chronic_lm)
 
-chronic_log2_lm <- lmer(log2(rge) ~ gene * Tissue * Treatment + (1|Sample), data=chronic)
+chronic_log2_lm <- lmer(log2(rge) ~ gene * Tissue * Treatment + (1|Sample), data=chronic_long)
 plot(chronic_log2_lm, type=c("p","smooth"), col.line=1)
 lattice::qqmath(chronic_log2_lm)
 
-shapiro.test(chronic$rge)
-shapiro.test(log2(chronic$rge))
+shapiro.test(chronic_long$rge)
+shapiro.test(log2(chronic_long$rge))
 
 
 anova(chronic_log2_lm)
@@ -62,7 +173,7 @@ emmeans::emmeans(chronic_log2_lm, pairwise ~ Treatment | Tissue, by="gene")$cont
 emmeans::emmeans(chronic_log2_lm, pairwise ~ Tissue | Treatment, by="gene")$contrasts
 emmeans::emmeans(chronic_log2_lm, pairwise ~ gene | Treatment, by="Tissue")$contrasts
 
-chronic_sumstats <- chronic %>% group_by(Treatment, Tissue, gene) %>% summarise(
+chronic_sumstats <- chronic_long %>% group_by(Treatment, Tissue, gene) %>% summarise(
   n = n(),
   mean = mean(rge),
   sd = sd(rge),
@@ -73,12 +184,12 @@ chronic_sumstats
 
 
 chronic_plot <- ggplot() +
-  stat_summary(data=chronic, aes(x=Treatment, y=rge, fill=Tissue),
+  stat_summary(data=chronic_long, aes(x=Treatment, y=rge, fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
   geom_errorbar(data=chronic_sumstats, aes(x=Treatment, ymin=mean-sd,
                                            ymax=mean+sd, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=chronic, aes(x=Treatment, y=rge, fill=Tissue),
+  geom_point(data=chronic_long, aes(x=Treatment, y=rge, fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_grid(gene~Tissue, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
@@ -91,12 +202,12 @@ chronic_plot
 
 
 chronic_log_plot <- ggplot() +
-  stat_summary(data=chronic, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  stat_summary(data=chronic_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
   geom_errorbar(data=chronic_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
                                          ymax=log2_mean+log2_sd, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=chronic, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  geom_point(data=chronic_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_grid(gene~Tissue, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
