@@ -21,12 +21,17 @@ library(EnvStats)
 
 Visualizations for potential sex and tissue-dependent differences
 ```{r}
-sex_diff <- read.csv("../data/morphine_retina_cx_sex_diff.csv", fileEncoding = 'UTF-8-BOM')
+sex_diff <- read.csv("../data/morphine_retina_cx_plasma_sex_diff.csv",
+                     fileEncoding = 'UTF-8-BOM')
 sex_diff$conc_wt <- (sex_diff$raw_conc/sex_diff$tissue_weight)
 sex_diff$log_conc_wt <- log(sex_diff$conc_wt)
+sex_diff$log_conc_raw <- log(sex_diff$raw_conc)
 
-sex_diff <- sex_diff %>% mutate(tissue = factor(as.factor(tissue), c("retina", "brain")),
-                                group = factor(as.factor(group), c("male", "lowE", "highE")))
+sex_diff <- sex_diff %>% mutate(tissue = factor(as.factor(tissue),
+                                                c("plasma", "retina", "brain")),
+                                group = factor(as.factor(group),
+                                               c("male", "lowE", "highE")),
+                                animal = as.factor(animal))
 
 str(sex_diff)
 
@@ -39,6 +44,12 @@ test_out
 
 SumStat_sexdiff <- dplyr::summarise(group_by(sex_diff, tissue, group),
 n = n(),
+mean_conc_raw = mean(raw_conc),
+sd_conc_raw = sd(raw_conc),
+se_conc_raw = sd_conc_raw/sqrt(n),
+mean_conc_raw_log = mean(log(raw_conc)),
+sd_conc_raw_log = sd(log(raw_conc)),
+se_conc_raw_log = sd_conc_raw_log/sqrt(n),
 mean_conc_wt = mean(conc_wt),
 sd_conc_wt = sd(conc_wt),
 se_conc_wt = sd_conc_wt/sqrt(n),
@@ -52,9 +63,108 @@ sd_dose = sd(dose),
 )
 
 SumStat_sexdiff
-
-
 ```
+
+## Brain, Retina & Plasma - raw conc
+
+```{r}
+plotall_tissue <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=group, y=mean_conc_raw, fill=tissue),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=group, ymin=mean_conc_raw - se_conc_raw,
+                                      ymax=mean_conc_raw + se_conc_raw, fill=tissue),
+                position=position_dodge(width=0.75), width=.2) + 
+  geom_point(data=sex_diff, aes(x=group, y=raw_conc, fill=tissue),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="[morphine] (ng/mL)",
+                     expand = expansion(mult = c(0, 0.1))) +
+  theme_bw(base_size = 12) +
+  scale_fill_manual(values=c("red", "dodgerblue", "goldenrod1")) +
+  scale_x_discrete(labels=c("male" = "Males", "lowE" = "Low E/P\nfemales",
+                            "highE" = "High E/P\nfemales")) +
+  xlab("")
+
+plotall_tissue
+#ggsave("../figures/conc_alltissues.svg", plot=plotall_tissue, width=6, height=4)
+
+plotall_tissueL <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=group, y=mean_conc_raw_log, fill=tissue),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=group,ymin=mean_conc_raw_log - se_conc_raw_log,
+                                      ymax=mean_conc_raw_log + se_conc_raw_log, fill=tissue),
+                position=position_dodge(width=0.75), width=.2) +
+  geom_point(data=sex_diff, aes(x=group, y=log_conc_raw, fill=tissue),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="ln [morphine] (ng/mL)",
+                     expand = expansion(mult = c(0, 0.2))) +
+  theme_bw(base_size = 12) +
+  scale_fill_manual(values=c("red", "dodgerblue", "goldenrod1")) +
+  scale_x_discrete(labels=c("male" = "Males", "lowE" = "Low E/P\nfemales",
+                            "highE" = "High E/P\nfemales")) +
+  xlab("")
+
+plotall_tissueL
+#ggsave("../figures/conc_alltissues_log.svg", plot=plotall_tissueL, width=6, height=4)
+
+
+plotall_stage <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_raw, fill=group),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=mean_conc_raw - se_conc_raw,
+                                      ymax=mean_conc_raw + se_conc_raw, fill=group),
+                position=position_dodge(width=0.75), width=.2) + 
+  geom_point(data=sex_diff, aes(x=tissue, y=raw_conc, fill=group),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="[morphine] (ng/mL)",
+                     expand = expansion(mult = c(0, 0.1))) +
+  theme_bw(base_size = 12) +
+  scale_fill_discrete(labels=c("male" = "Males", "lowE" = "Low E/P females",
+                            "highE" = "High E/P females")) +
+  xlab("")
+
+plotall_stage
+
+plotall_stageL <- ggplot() + 
+  geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_raw_log, fill=group),
+           stat="identity", position=position_dodge(width=0.75), width=0.75) +
+  geom_errorbar(data=SumStat_sexdiff, aes(x=tissue,ymin=mean_conc_raw_log - se_conc_raw_log,
+                                      ymax=mean_conc_raw_log + se_conc_raw_log, fill=group),
+                position=position_dodge(width=0.75), width=.2) +
+  geom_point(data=sex_diff, aes(x=tissue, y=log_conc_raw, fill=group),
+             position=position_dodge(width=0.75)) +
+  scale_y_continuous(name="ln [morphine] (ng/mL))",
+                     expand = expansion(mult = c(0, 0.2))) +
+  theme_bw(base_size = 12) +
+  scale_fill_discrete(labels=c("male" = "Males", "lowE" = "Low E/P females",
+                            "highE" = "High E/P females")) +
+  xlab("")
+
+plotall_stageL
+#ggsave("../figures/conc_stage_log.svg", plot=plot_stageL, width=6, height =4)
+```
+
+```{r}
+lmer_diff_all <- lmer(raw_conc ~ group*tissue+(1|animal), data =sex_diff)
+plot(lmer_diff_all, type=c("p","smooth"), col.line=1)
+lattice::qqmath(lmer_diff_all)
+
+lmer_diff_all_log <- lmer(log(raw_conc) ~ group*tissue+(1|animal), data =sex_diff)
+plot(lmer_diff_all_log, type=c("p","smooth"), col.line=1)
+lattice::qqmath(lmer_diff_all_log)
+
+Anova(lmer_diff_all_log, type="3")
+emmeans::emmeans(lmer_diff_all_log, pairwise ~ tissue| group)$contrasts
+emmeans::emmeans(lmer_diff_all_log, pairwise ~ group| tissue)$contrasts
+
+
+
+shapiro.test(resid(lmer_diff))
+```
+
+
+
+
+## Brain & Retina normalized by tissue weight
 
 ```{r}
 plot_tissue <- ggplot() + 
