@@ -20,6 +20,8 @@ library(lmerTest)
 library(svglite)
 ```
 
+## Reading in & tidying the data
+
 ```{r}
 transporters <- read.csv("../../data/qRT-PCR/07222022-transporter-gene-study.csv", fileEncoding = 'UTF-8-BOM')
 
@@ -71,47 +73,62 @@ c_bcrp_sumstats <- chronic %>% group_by(Treatment, Tissue) %>% summarise(
   n = n(),
   mean = mean(Bcrp.RGE),
   sd = sd(Bcrp.RGE),
+  se = sd/sqrt(n),
   log2_mean = mean(log2(Bcrp.RGE)),
-  log2_sd = sd(log2(Bcrp.RGE))
+  log2_sd = sd(log2(Bcrp.RGE)),
+  log2_se = log2_sd/sqrt(n)
 )
 c_bcrp_sumstats
+```
 
-#treatment plots
+```{r}
+#visualizing tissue effect per treatment
 c_bcrp_plot <- ggplot() +
-  stat_summary(data=chronic, aes(x=Treatment, y=Bcrp.RGE, fill=Tissue),
-               fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=mean-sd,
-                                           ymax=mean+sd, fill=Tissue),
+  stat_summary(data=chronic, aes(x=Treatment, y=Bcrp.RGE, fill=Tissue), fun='mean',
+               geom="bar", width=0.75, position=position_dodge(width=0.75)) +
+  geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=mean-se,
+                                           ymax=mean+se, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
   geom_point(data=chronic, aes(x=Treatment, y=Bcrp.RGE, fill=Tissue),
-             stat="identity", position=position_dodge(width=0.75)) +
-  facet_grid(~Tissue, scales="free_y") +
+             position=position_dodge(width=0.75)) +
+  #facet_grid(~Tissue, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-  #scale_fill_manual(values=c("maroon1", "springgreen3")) +
-  theme_bw(base_size = 14)
+  theme_bw(base_size = 12) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("Retina", "Hypothalamus")) +
+  scale_x_discrete(labels=c("S" = "Saline", "C" = "Morphine")) +
+  xlab("") +
+  ylab(expression(RGE[Bcrp]))
 
 c_bcrp_plot
 
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_plot.svg", plot=c_bcrp_plot, height=4, width=6, bg="transparent")
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_effect_plot.svg", plot=c_bcrp_plot, height=4, width=5, bg="transparent")
 
 c_bcrp_log_plot <- ggplot() +
   stat_summary(data=chronic, aes(x=Treatment, y=log2(Bcrp.RGE), fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
-                                         ymax=log2_mean+log2_sd, fill=Tissue),
+  geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
   geom_point(data=chronic, aes(x=Treatment, y=log2(Bcrp.RGE), fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
-  facet_grid(~Tissue, scales="free_y") +
-  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  #facet_grid(~Tissue, scales="free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.2))) +
   #scale_fill_manual(values=c("maroon1", "springgreen3")) +
-  theme_bw(base_size = 14)
+  theme_bw(base_size = 12) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("Retina", "Hypothalamus")) +
+  scale_x_discrete(labels=c("S" = "Saline", "C" = "Morphine")) +
+  xlab("") +
+  ylab(expression(log[2](RGE[Bcrp])))
 
 c_bcrp_log_plot
 
+#NEED TO SAVE THIS!!!!
 #ggsave(filename="../../figures/qRT-PCR/c_bcrp_log_plot.g", plot=c_bcrp_log_plot, height=4, width=6, bg="transparent")
 
 
+#edit starting here
 #tissue plots
 c_bcrp_tiss_plot <- ggplot() +
   stat_summary(data=chronic, aes(x=Tissue, y=Bcrp.RGE, fill=Treatment),
