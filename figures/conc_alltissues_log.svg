@@ -207,7 +207,7 @@
 <text x='189.36' y='265.90' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='33.59px' lengthAdjust='spacingAndGlyphs'>females</text>
 <text x='288.47' y='255.53' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='37.84px' lengthAdjust='spacingAndGlyphs'>High E/P</text>
 <text x='288.47' y='265.90' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='33.59px' lengthAdjust='spacingAndGlyphs'>females</text>
-<text transform='translate(14.57,124.63) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='114.06px' lengthAdjust='spacingAndGlyphs'>ln [morphine] (ng/mL)</text>
+<text transform='translate(14.57,124.63) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='110.72px' lengthAdjust='spacingAndGlyphs'>ln[morphine] (ng/mL)</text>
 <rect x='359.89' y='84.19' width='66.14' height='80.89' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <text x='365.86' y='100.02' style='font-size: 12.00px; font-family: "Arial";' textLength='31.36px' lengthAdjust='spacingAndGlyphs'>tissue</text>
 <rect x='365.86' y='107.26' width='17.28' height='17.28' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
