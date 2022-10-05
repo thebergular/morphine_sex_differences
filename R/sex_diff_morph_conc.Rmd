@@ -19,7 +19,8 @@ library(lme4)
 library(EnvStats)
 ```
 
-Visualizations for potential sex and tissue-dependent differences
+## Reading in & tidying the data
+
 ```{r}
 sex_diff <- read.csv("../data/morphine_retina_cx_plasma_sex_diff.csv",
                      fileEncoding = 'UTF-8-BOM')
@@ -43,29 +44,31 @@ test_out
 
 
 SumStat_sexdiff <- dplyr::summarise(group_by(sex_diff, tissue, group),
-n = n(),
-mean_conc_raw = mean(raw_conc),
-sd_conc_raw = sd(raw_conc),
-se_conc_raw = sd_conc_raw/sqrt(n),
-mean_conc_raw_log = mean(log(raw_conc)),
-sd_conc_raw_log = sd(log(raw_conc)),
-se_conc_raw_log = sd_conc_raw_log/sqrt(n),
-mean_conc_wt = mean(conc_wt),
-sd_conc_wt = sd(conc_wt),
-se_conc_wt = sd_conc_wt/sqrt(n),
-log_conc = mean(log(conc_wt)),
-sd_conc_log = sd(log(conc_wt)),
-se_conc_log = sd_conc_log/sqrt(n),
-mean_wt = mean(body_wt),
-sd_wt = sd(body_wt),
-mean_dose = mean(dose),
-sd_dose = sd(dose),
+  n = n(),
+  mean_conc_raw = mean(raw_conc),
+  sd_conc_raw = sd(raw_conc),
+  se_conc_raw = sd_conc_raw/sqrt(n),
+  mean_conc_raw_log = mean(log(raw_conc)),
+  sd_conc_raw_log = sd(log(raw_conc)),
+  se_conc_raw_log = sd_conc_raw_log/sqrt(n),
+  mean_conc_wt = mean(conc_wt),
+  sd_conc_wt = sd(conc_wt),
+  se_conc_wt = sd_conc_wt/sqrt(n),
+  log_conc = mean(log(conc_wt)),
+  sd_conc_log = sd(log(conc_wt)),
+  se_conc_log = sd_conc_log/sqrt(n),
+  mean_wt = mean(body_wt),
+  sd_wt = sd(body_wt),
+  mean_dose = mean(dose),
+  sd_dose = sd(dose),
 )
 
 SumStat_sexdiff
 ```
 
 ## Brain, Retina & Plasma - raw conc
+
+Visualizations for potential sex and tissue-dependent differences
 
 ```{r}
 plotall_tissue <- ggplot() + 
