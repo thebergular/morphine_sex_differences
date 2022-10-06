@@ -1,6 +1,5 @@
 ---
 title: "qPCR Transporter Figures"
-subtitle: "Analysis of chronic morphine effect on P-gp and Bcrp"
 author: "C-T Berezin"
 date: "10/30/2021"
 output:
@@ -20,6 +19,8 @@ library(car)
 library(lmerTest)
 library(svglite)
 ```
+
+# Comparing chronic saline/morphine for Bcrp (rerun of samples for P-gp from Bergum 2022)
 
 ## Reading in & tidying the data
 
@@ -46,7 +47,7 @@ transporters_long <- transporters_long %>% mutate(gene = factor(as.factor(gene),
 head(transporters_long)
 ```
 
-## Comparing chronic saline/morphine for Bcrp (rerun of samples for P-gp from Bergum 2022)
+## Stats on Bcrp only (chronic vs saline)
 
 ```{r}
 #bcrp only
@@ -81,6 +82,8 @@ c_bcrp_sumstats <- chronic %>% group_by(Treatment, Tissue) %>% summarise(
 )
 c_bcrp_sumstats
 ```
+
+## Visualizing chronic vs saline Bcrp
 
 ```{r}
 #visualizing tissue effect per treatment
@@ -174,7 +177,7 @@ c_bcrp_tiss_log_plot
 #ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_log_plot.svg", plot=c_bcrp_tiss_log_plot, height=4, width=4)
 ```
 
-## Chronic morphine Bcrp test WITH P-gp in stats
+### Chronic morphine Bcrp test WITH P-gp in stats
 
 ```{r}
 #bcrp & pgp together
@@ -248,14 +251,39 @@ chronic_log_plot
 #ggsave(filename="../../figures/qRT-PCR/chronic_trt_log.svg", plot=chronic_log_plot, height=4, width=6)
 ```
 
-# To bottom: Full analysis (all 5 groups) - not used
+# Looking at only the 1 injection samples (males, low e/p females, high e/p females)
+
+## Reading in the new dataset
 
 ```{r}
-transporter_lm <- lmer(rge ~ gene * Tissue * Treatment + (1|Sample), data=transporters_long)
+transporters <- read.csv("../../data/qRT-PCR/07222022-transporter-gene-study-1inj-only.csv", fileEncoding = 'UTF-8-BOM')
+
+#transporters <- transporters %>% filter(Sample != "calib")
+  
+transporters <- transporters %>% mutate(Tissue = str_sub(Sample, start=-3L, end=-1L),
+                                        Group = str_extract(Sample, "[:alpha:]+(?=[:digit:])"),
+                                        Sample = str_extract(Sample, "[:alnum:]+(?=-)"))
+
+transporters <- transporters %>% mutate(Group = factor(Group, c("M", "Flo", "Fhi")),
+                                        Tissue = factor(Tissue, c("ret", "hyp")),
+                                        Sample = as.factor(Sample))
+
+transporters_long <- transporters %>% pivot_longer(cols=c("Pgp.RGE", "Bcrp.RGE"), names_to = "gene", values_to="rge")
+
+transporters_long <- transporters_long %>% mutate(gene = str_extract(gene, "[:alpha:]+(?=.)"))
+transporters_long <- transporters_long %>% mutate(gene = factor(as.factor(gene), c("Pgp", "Bcrp")))
+
+transporters_long
+```
+
+## Stats
+
+```{r}
+transporter_lm <- lmer(rge ~ gene * Tissue * Group + (1|Sample), data=transporters_long)
 plot(transporter_lm, type=c("p","smooth"), col.line=1)
 lattice::qqmath(transporter_lm)
 
-transporter_log2_lm <- lmer(log2(rge) ~ gene * Tissue * Treatment + (1|Sample), data=transporters_long)
+transporter_log2_lm <- lmer(log2(rge) ~ gene * Tissue * Group + (1|Sample), data=transporters_long)
 plot(transporter_log2_lm, type=c("p","smooth"), col.line=1)
 lattice::qqmath(transporter_log2_lm)
 
@@ -265,13 +293,210 @@ shapiro.test(log2(transporters_long$rge))
 
 anova(transporter_log2_lm)
 
-emmeans::emmeans(transporter_log2_lm, pairwise ~ Treatment | Tissue, by="gene")$contrasts
-emmeans::emmeans(transporter_log2_lm, pairwise ~ Tissue | Treatment, by="gene")$contrasts
-emmeans::emmeans(transporter_log2_lm, pairwise ~ gene | Treatment, by="Tissue")$contrasts
+emmeans::emmeans(transporter_log2_lm, pairwise ~ Group | Tissue, by="gene")$contrasts
+emmeans::emmeans(transporter_log2_lm, pairwise ~ Tissue | Group, by="gene")$contrasts
+emmeans::emmeans(transporter_log2_lm, pairwise ~ gene | Group, by="Tissue")$contrasts
 ```
 
 ```{r}
-trans_sumstats <- transporters_long %>% group_by(Treatment, Tissue, gene) %>% summarise(
+trans_sumstats <- transporters_long %>% group_by(Group, Tissue, gene) %>% summarise(
+  n = n(),
+  mean = mean(rge),
+  sd = sd(rge),
+  se = sd/sqrt(n),
+  log2_mean = mean(log2(rge)),
+  log2_sd = sd(log2(rge)),
+  log2_se = log2_sd/sqrt(n)
+)
+trans_sumstats
+```
+
+## Visualizing hyp vs ret within each treatment/gene
+
+```{r}
+gene.labs <- c("P-gp", "Bcrp")
+names(gene.labs) <- c("Pgp", "Bcrp")
+
+trans_hyp_ret_plot <- ggplot() +
+  stat_summary(data=transporters_long, aes(x=Group, y=rge, fill=Tissue),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=trans_sumstats, aes(x=Group, ymin=mean-se, ymax=mean+se, fill=Tissue),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Group, y=rge, fill=Tissue),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~gene, labeller = labeller(gene = gene.labs), ncol=2) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  theme_bw(base_size = 12) %+replace%
+  theme(legend.title = element_blank()) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("Retina", "Brain")) +
+  scale_x_discrete(labels=c("M" = "Males", "Flo" = "Low E/P\nFemales",
+                            "Fhi" = "High E/P\nFemales")) +
+  xlab("") +
+  ylab("RGE")
+
+trans_hyp_ret_plot
+#ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_1inj.png", plot=trans_hyp_ret_plot, height=4, width=7)
+#ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_1inj.svg", plot=trans_hyp_ret_plot, height=4, width=7)
+
+trans_hyp_ret_log_plot <- ggplot() +
+  stat_summary(data=transporters_long, aes(x=Group, y=log2(rge), fill=Tissue),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=trans_sumstats, aes(x=Group, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=Tissue),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Group, y=log2(rge), fill=Tissue),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~gene, labeller = labeller(gene = gene.labs), ncol=2) +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  theme_bw(base_size = 12) %+replace%
+  theme(legend.title = element_blank()) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("Retina", "Brain")) +
+  scale_x_discrete(labels=c("M" = "Males", "Flo" = "Low E/P\nFemales",
+                            "Fhi" = "High E/P\nFemales")) +
+  xlab("") +
+  ylab(expression(log[2](RGE)))
+
+trans_hyp_ret_log_plot
+#ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_log_1inj.png", plot=trans_hyp_ret_log_plot, height=4, width=7)
+#ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_log_1inj.svg", plot=trans_hyp_ret_log_plot, height=4, width=7)
+```
+
+## Visualizing sex diffs within each tissue/gene
+
+```{r}
+trans_trt_plot <- ggplot() +
+  stat_summary(data=transporters_long, aes(x=Tissue, y=rge, fill=Group),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=trans_sumstats, aes(x=Tissue, ymin=mean-se, ymax=mean+se, fill=Group),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Tissue, y=rge, fill=Group),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~gene, labeller = labeller(gene = gene.labs), ncol=2) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  theme_bw(base_size = 12) %+replace%
+  theme(legend.title = element_blank(),
+        legend.spacing.y = unit(0.1, 'cm')) +
+  ## next line needed to make previous line work
+  guides(fill = guide_legend(byrow = TRUE)) +
+  scale_fill_manual(values=c("gray50", "darkolivegreen3", "lightpink2"),
+                    labels=c("M" = "Males", "Flo" = "Low E/P\nfemales",
+                            "Fhi" = "High E/P\nfemales")) +
+  scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain")) +
+  xlab("") +
+  ylab("RGE")
+
+trans_trt_plot
+#ggsave(filename="../../figures/qRT-PCR/trans_trt_1inj.png", plot=trans_trt_plot, height=4, width=7)
+#ggsave(filename="../../figures/qRT-PCR/trans_trt_1inj.svg", plot=trans_trt_plot, height=4, width=7)
+
+
+trans_trt_log_plot <- ggplot() +
+  stat_summary(data=transporters_long, aes(x=Tissue, y=log2(rge), fill=Group),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=trans_sumstats, aes(x=Tissue, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=Group),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Tissue, y=log2(rge), fill=Group),
+             stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~gene, labeller = labeller(gene = gene.labs), ncol=2) +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  theme_bw(base_size = 12) %+replace%
+  theme(legend.title = element_blank(),
+        legend.spacing.y = unit(0.1, 'cm')) +
+  ## next line needed to make previous line work
+  guides(fill = guide_legend(byrow = TRUE)) +
+  scale_fill_manual(values=c("gray50", "darkolivegreen3", "lightpink2"),
+                    labels=c("M" = "Males", "Flo" = "Low E/P\nfemales",
+                            "Fhi" = "High E/P\nfemales")) +
+  scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain")) +
+  xlab("") +
+  ylab(expression(log[2](RGE)))
+
+trans_trt_log_plot
+#ggsave(filename="../../figures/qRT-PCR/trans_trt_log_1inj.png", plot=trans_trt_log_plot, height=4, width=7)
+#ggsave(filename="../../figures/qRT-PCR/trans_trt_log_1inj.svg", plot=trans_trt_log_plot, height=4, width=7)
+```
+
+## Visualizing P-gp vs Bcrp differences
+
+```{r}
+group.labs <- c("Males", "Low E/P Females", "High E/P Females")
+names(group.labs) <- c("M", "Flo", "Fhi")
+
+trans_g2g_plot <- ggplot() +
+  stat_summary(data=transporters_long, aes(x=Tissue, y=rge, fill=gene),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=trans_sumstats, aes(x=Tissue, ymin=mean-se,
+                                         ymax=mean+se, fill=gene),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Tissue, y=rge, fill=gene),
+             position=position_dodge(width=0.75)) +
+  facet_grid(~Group, labeller = labeller(Group = group.labs)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+  scale_fill_manual(values=c("darkorchid1", "orange1"),
+                    labels = c("P-gp", "Bcrp")) +
+  theme_bw(base_size = 12) %+replace%
+  theme(legend.title = element_blank()) +
+  xlab("") +
+  ylab("RGE") +
+  scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain"))
+
+trans_g2g_plot
+#ggsave(filename="../../figures/qRT-PCR/trans_g2g_1inj.png", plot=trans_g2g_plot, height=4, width=7)
+#ggsave(filename="../../figures/qRT-PCR/trans_g2g_1inj.svg", plot=trans_g2g_plot, height=4, width=7)
+
+
+trans_g2g_log_plot <- ggplot() +
+  stat_summary(data=transporters_long, aes(x=Tissue, y=log2(rge), fill=gene),
+               fun = 'mean', geom="bar", width=0.75, position="dodge") +
+  geom_errorbar(data=trans_sumstats, aes(x=Tissue, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=gene),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Tissue, y=log2(rge), fill=gene),
+             position=position_dodge(width=0.75)) +
+  facet_wrap(~Group, labeller = labeller(Group = group.labs)) +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  scale_fill_manual(values=c("darkorchid1", "orange1"),
+                    labels = c("P-gp", "Bcrp")) +
+  theme_bw(base_size = 12) %+replace%
+  theme(legend.title = element_blank()) +
+  xlab("") +
+  ylab(expression(log[2](RGE))) +
+  scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain"))
+
+trans_g2g_log_plot
+#ggsave(filename="../../figures/qRT-PCR/trans_g2g_log_1inj.png", plot=trans_g2g_log_plot, height=4, width=7)
+#ggsave(filename="../../figures/qRT-PCR/trans_g2g_log_1inj.svg", plot=trans_g2g_log_plot, height=4, width=7)
+```
+
+
+
+# To bottom: Full analysis (all 5 groups) - not used
+
+```{r}
+transporter_lm <- lmer(rge ~ gene * Tissue * Group + (1|Sample), data=transporters_long)
+plot(transporter_lm, type=c("p","smooth"), col.line=1)
+lattice::qqmath(transporter_lm)
+
+transporter_log2_lm <- lmer(log2(rge) ~ gene * Tissue * Group + (1|Sample), data=transporters_long)
+plot(transporter_log2_lm, type=c("p","smooth"), col.line=1)
+lattice::qqmath(transporter_log2_lm)
+
+shapiro.test(transporters_long$rge)
+shapiro.test(log2(transporters_long$rge))
+
+
+anova(transporter_log2_lm)
+
+emmeans::emmeans(transporter_log2_lm, pairwise ~ Group | Tissue, by="gene")$contrasts
+emmeans::emmeans(transporter_log2_lm, pairwise ~ Tissue | Group, by="gene")$contrasts
+emmeans::emmeans(transporter_log2_lm, pairwise ~ gene | Group, by="Tissue")$contrasts
+```
+
+```{r}
+trans_sumstats <- transporters_long %>% group_by(Group, Tissue, gene) %>% summarise(
   n = n(),
   mean = mean(rge),
   sd = sd(rge),
@@ -281,15 +506,15 @@ trans_sumstats <- transporters_long %>% group_by(Treatment, Tissue, gene) %>% su
 trans_sumstats
 ```
 
-## Comparing hyp vs ret within each treatment/gene
+### Comparing hyp vs ret within each treatment/gene
 
 ```{r}
 trans_hyp_ret_plot <- ggplot() +
-  stat_summary(data=transporters_long, aes(x=Treatment, y=rge, fill=Tissue),
+  stat_summary(data=transporters_long, aes(x=Group, y=rge, fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=mean-sd, ymax=mean+sd, fill=Tissue),
+  geom_errorbar(data=trans_sumstats, aes(x=Group, ymin=mean-sd, ymax=mean+sd, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=transporters_long, aes(x=Treatment, y=rge, fill=Tissue),
+  geom_point(data=transporters_long, aes(x=Group, y=rge, fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_wrap(~gene, scales="free_y", ncol=1) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
@@ -303,12 +528,12 @@ trans_hyp_ret_plot
 
 
 trans_hyp_ret_log_plot <- ggplot() +
-  stat_summary(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  stat_summary(data=transporters_long, aes(x=Group, y=log2(rge), fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
+  geom_errorbar(data=trans_sumstats, aes(x=Group, ymin=log2_mean-log2_sd,
                                          ymax=log2_mean+log2_sd, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  geom_point(data=transporters_long, aes(x=Group, y=log2(rge), fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_wrap(~gene, scales="free_y",ncol=1) +
   scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
@@ -321,15 +546,15 @@ trans_hyp_ret_log_plot
 #ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_log.svg", plot=trans_hyp_ret_log_plot, height=4, width=6)
 ```
 
-## Comparing treatments within each tissue/gene
+### Comparing treatments within each tissue/gene
 
 ```{r}
 trans_trt_plot <- ggplot() +
-  stat_summary(data=transporters_long, aes(x=Treatment, y=rge, fill=Tissue),
+  stat_summary(data=transporters_long, aes(x=Group, y=rge, fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=mean-sd, ymax=mean+sd, fill=Tissue),
+  geom_errorbar(data=trans_sumstats, aes(x=Group, ymin=mean-sd, ymax=mean+sd, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=transporters_long, aes(x=Treatment, y=rge, fill=Tissue),
+  geom_point(data=transporters_long, aes(x=Group, y=rge, fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_grid(gene~Tissue, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
@@ -343,12 +568,12 @@ trans_trt_plot
 
 
 trans_trt_log_plot <- ggplot() +
-  stat_summary(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  stat_summary(data=transporters_long, aes(x=Group, y=log2(rge), fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
+  geom_errorbar(data=trans_sumstats, aes(x=Group, ymin=log2_mean-log2_sd,
                                          ymax=log2_mean+log2_sd, fill=Tissue),
                 width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  geom_point(data=transporters_long, aes(x=Group, y=log2(rge), fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_grid(gene~Tissue, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
@@ -361,6 +586,7 @@ trans_trt_log_plot
 #ggsave(filename="../../figures/qRT-PCR/trans_trt_log.svg", plot=trans_trt_log_plot, height=4, width=6)
 ```
 
+### Comparing P-gp to Bcrp
 
 ```{r}
 trans_g2g_plot <- ggplot() +
@@ -371,7 +597,7 @@ trans_g2g_plot <- ggplot() +
                 width=0.2, position=position_dodge(width=0.75)) +
   geom_point(data=transporters_long, aes(x=gene, y=rge, fill=gene),
              position=position_dodge(width=0.75)) +
-  facet_grid(Tissue~Treatment, scales="free_y") +
+  facet_grid(Tissue~Group, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
   scale_fill_manual(values=c("springgreen3", "hotpink")) +
   theme_bw()
@@ -390,7 +616,7 @@ trans_g2g_log_plot <- ggplot() +
                 width=0.2, position=position_dodge(width=0.75)) +
   geom_point(data=transporters_long, aes(x=gene, y=log2(rge), fill=gene),
              position=position_dodge(width=0.75)) +
-  facet_grid(Tissue~Treatment, scales="free_y") +
+  facet_grid(Tissue~Group, scales="free_y") +
   scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
   scale_fill_manual(values=c("springgreen3", "hotpink")) +
   theme_bw()
