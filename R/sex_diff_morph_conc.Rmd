@@ -124,23 +124,21 @@ plotall_stage <- ggplot() +
                                       ymax=mean_conc_raw + se_conc_raw, fill=group),
                 position=position_dodge(width=0.75), width=.25) + 
   geom_point(data=sex_diff, aes(x=tissue, y=raw_conc, fill=group),
-             position=position_dodge(width=0.75)) +
+             size=2, position=position_dodge(width=0.75)) +
   scale_y_continuous(name="[Morphine] (ng/mL)",
                      expand = expansion(mult = c(0, 0.1))) +
-  theme_bw(base_size = 12) %+replace%
-    theme(legend.title = element_blank(),
-          legend.spacing.y = unit(0.1, 'cm')) +
-  ## next line needed to make previous line work
-  guides(fill = guide_legend(byrow = TRUE)) +
-  scale_fill_discrete(labels=c("male" = "Males", "lowE" = "Low E/P\nfemales",
-                            "highE" = "High E/P\nfemales")) +
+  theme_bw(base_size = 20) %+replace%
+    theme(legend.title = element_blank()) +
+  scale_fill_manual(labels=c("male" = "Males", "lowE" = "Low E/P females",
+                            "highE" = "High E/P females"),
+                      values=c("gray50", "darkolivegreen3", "lightpink2")) +
   scale_x_discrete(labels=c("plasma" = "Plasma", "retina" = "Retina",
                             "brain" = "Brain")) +
   xlab("")
 
 plotall_stage
 #ggsave("../figures/conc_all_stage.png", plot=plotall_stage, width=6, height=4)
-#ggsave("../figures/conc_all_stage.svg", plot=plotall_stage, width=6, height=4)
+ggsave("../figures/conc_all_stage_large.svg", plot=plotall_stage, width=9, height=4)
 
 plotall_stageL <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_raw_log, fill=group),
@@ -149,23 +147,21 @@ plotall_stageL <- ggplot() +
                                       ymax=mean_conc_raw_log + se_conc_raw_log, fill=group),
                 position=position_dodge(width=0.75), width=.25) +
   geom_point(data=sex_diff, aes(x=tissue, y=log_conc_raw, fill=group),
-             position=position_dodge(width=0.75)) +
+             size=2, position=position_dodge(width=0.75)) +
   scale_y_continuous(name="ln([Morphine] (ng/mL))",
                      expand = expansion(mult = c(0, 0.2))) +
-  theme_bw(base_size = 12) %+replace%
-    theme(legend.title = element_blank(),
-          legend.spacing.y = unit(0.1, 'cm')) +
-  ## next line needed to make previous line work
-  guides(fill = guide_legend(byrow = TRUE)) +
-  scale_fill_discrete(labels=c("male" = "Males", "lowE" = "Low E/P\nfemales",
-                            "highE" = "High E/P\nfemales")) +
+  theme_bw(base_size = 20) %+replace%
+    theme(legend.title = element_blank()) +
+  scale_fill_manual(labels=c("male" = "Males", "lowE" = "Low E/P females",
+                            "highE" = "High E/P females"),
+                      values=c("gray50", "darkolivegreen3", "lightpink2")) +
   scale_x_discrete(labels=c("plasma" = "Plasma", "retina" = "Retina",
                             "brain" = "Brain")) +
   xlab("")
 
 plotall_stageL
 #ggsave("../figures/conc_all_stage_log.png", plot=plotall_stageL, width=6, height=4)
-#ggsave("../figures/conc_all_stage_log.svg", plot=plotall_stageL, width=6, height=4)
+ggsave("../figures/conc_all_stage_log_large.svg", plot=plotall_stageL, width=9, height=4)
 ```
 
 Statistical analysis
@@ -201,10 +197,10 @@ plot_tissue <- ggplot() +
                                       ymax=mean_conc_wt + se_conc_wt, fill=tissue),
                 position=position_dodge(width=0.75), width=.25) + 
   geom_point(data=sex_diff, aes(x=group, y=conc_wt, fill=tissue),
-             position=position_dodge(width=0.75)) +
+             size=2, position=position_dodge(width=0.75)) +
   scale_y_continuous(name="[Morphine] per mg tissue (ng/mg)",
                      expand = expansion(mult = c(0, 0.1))) +
-  theme_bw(12) %+replace%
+  theme_bw(20) %+replace%
     theme(legend.title = element_blank()) +
   scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
                     labels=c("retina" = "Retina", "brain" = "Brain")) +
@@ -214,7 +210,7 @@ plot_tissue <- ggplot() +
 
 plot_tissue
 #ggsave("../figures/conc_tissue.png", plot=plot_tissue, width=6, height=4)
-#ggsave("../figures/conc_tissue.svg", plot=plot_tissue, width=6, height=4)
+ggsave("../figures/conc_tissue_large.svg", plot=plot_tissue,width=8, height=4)
 
 plot_tissueL <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=group, y=log_conc, fill=tissue),
@@ -223,10 +219,10 @@ plot_tissueL <- ggplot() +
                                       ymax=log_conc + se_conc_log, fill=tissue),
                 position=position_dodge(width=0.75), width=.25) +
   geom_point(data=sex_diff, aes(x=group, y=log_conc_wt, fill=tissue),
-             position=position_dodge(width=0.75)) +
+             size=2, position=position_dodge(width=0.75)) +
   scale_y_continuous(name="ln([Morphine] per mg tissue (ng/mg))",
                      expand = expansion(mult = c(0, 0.2))) +
-  theme_bw(12) %+replace%
+  theme_bw(20) %+replace%
     theme(legend.title = element_blank()) +
   scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
                     labels=c("retina" = "Retina", "brain" = "Brain")) +
@@ -236,7 +232,7 @@ plot_tissueL <- ggplot() +
 
 plot_tissueL
 #ggsave("../figures/conc_tissue_log.png", plot=plot_tissueL, width=6, height=4)
-#ggsave("../figures/conc_tissue_log.svg", plot=plot_tissueL, width=6, height=4)
+ggsave("../figures/conc_tissue_log_large.svg", plot=plot_tissueL, width=8, height=4)
 
 plot_stage <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_wt, fill=group),

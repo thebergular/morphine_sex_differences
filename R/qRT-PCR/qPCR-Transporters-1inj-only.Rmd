@@ -64,8 +64,10 @@ trans_sumstats <- transporters_long %>% group_by(Treatment, Tissue, gene) %>% su
   n = n(),
   mean = mean(rge),
   sd = sd(rge),
+  se = sd/sqrt(n),
   log2_mean = mean(log2(rge)),
-  log2_sd = sd(log2(rge))
+  log2_sd = sd(log2(rge)),
+  log2_se = log2_sd/sqrt(n)
 )
 trans_sumstats
 ```
@@ -76,14 +78,22 @@ trans_sumstats
 trans_hyp_ret_plot <- ggplot() +
   stat_summary(data=transporters_long, aes(x=Treatment, y=rge, fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=mean-sd, ymax=mean+sd, fill=Tissue),
-                width=0.2, position=position_dodge(width=0.75)) +
+  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=mean-se, ymax=mean+se, fill=Tissue),
+                width=0.25, position=position_dodge(width=0.75)) +
   geom_point(data=transporters_long, aes(x=Treatment, y=rge, fill=Tissue),
              stat="identity", position=position_dodge(width=0.75)) +
   facet_wrap(~gene, scales="free_y", ncol=1) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   #scale_fill_manual(values=c("maroon1", "springgreen3")) +
-  theme_bw()
+  theme_bw(12) %+replace%
+    theme(legend.title = element_blank(),
+          legend.box.spacing = unit(1, "pt"),
+          axis.title.x=element_blank()) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("ret" = "Retina", "hyp" = "Brain")) +
+  scale_x_discrete(labels=c("M" = "Males", "Flo" = "Low E/P females",
+                            "Fhi" = "High E/P females")) +
+  ylab(expression(log[2](RGE)))
 
 trans_hyp_ret_plot
 
@@ -93,19 +103,31 @@ trans_hyp_ret_plot
 trans_hyp_ret_log_plot <- ggplot() +
   stat_summary(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
-                                         ymax=log2_mean+log2_sd, fill=Tissue),
-                width=0.2, position=position_dodge(width=0.75)) +
+  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=Tissue),
+                width=0.25, position=position_dodge(width=0.75)) +
   geom_point(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
-             stat="identity", position=position_dodge(width=0.75)) +
-  facet_wrap(~gene, scales="free_y",ncol=1) +
-  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+             size=2, stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~gene, ncol=2) +
+  #scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  ylim(-0.6, 2.5) +
   #scale_fill_manual(values=c("maroon1", "springgreen3")) +
-  theme_bw()
+  theme_bw(20) %+replace%
+    theme(legend.title = element_blank(),
+          legend.box.spacing = unit(1, "pt"),
+          axis.title.x=element_blank(),
+          strip.background = element_rect(color="transparent", fill="transparent",
+                                          size=0, linetype="solid")
+          ) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("ret" = "Retina", "hyp" = "Brain")) +
+  scale_x_discrete(labels=c("M" = "Males", "Flo" = "Low E/P\nfemales",
+                            "Fhi" = "High E/P\nfemales")) +
+  ylab(expression(log[2](RGE)))
 
 trans_hyp_ret_log_plot
 
-#ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_log_1inj.png", plot=trans_hyp_ret_log_plot, height=4, width=4)
+ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_log_1inj_large.png", plot=trans_hyp_ret_log_plot, height=6, width=12)
 #ggsave(filename="../../figures/qRT-PCR/trans_hyp_ret_log_1inj.svg", plot=trans_hyp_ret_log_plot, height=4, width=4)
 ```
 
@@ -131,21 +153,33 @@ trans_trt_plot
 
 
 trans_trt_log_plot <- ggplot() +
-  stat_summary(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
+  stat_summary(data=transporters_long, aes(x=Tissue, y=log2(rge), fill=Treatment),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=log2_mean-log2_sd,
-                                         ymax=log2_mean+log2_sd, fill=Tissue),
-                width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=Tissue),
-             stat="identity", position=position_dodge(width=0.75)) +
-  facet_grid(gene~Tissue, scales="free_y") +
-  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  geom_errorbar(data=trans_sumstats, aes(x=Tissue, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=Treatment),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Tissue, y=log2(rge), fill=Treatment),
+             size=2, stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~gene, ncol=2) +
+  #scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  ylim(-0.6, 2.5) +
   #scale_fill_manual(values=c("maroon1", "springgreen3")) +
-  theme_bw()
+  theme_bw(20) %+replace%
+    theme(legend.title = element_blank(),
+          legend.box.spacing = unit(1, "pt"),
+          axis.title.x=element_blank(),
+          strip.background = element_rect(color="transparent", fill="transparent",
+                                          size=0, linetype="solid")
+          ) +
+  scale_fill_manual(values=c("gray50", "darkolivegreen3", "lightpink2"),
+                    labels=c("M" = "Males", "Flo" = "Low E/P females",
+                            "Fhi" = "High E/P females")) +
+  scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain")) +
+  ylab(expression(log[2](RGE)))
 
 trans_trt_log_plot
 
-#ggsave(filename="../../figures/qRT-PCR/trans_trt_log_1inj.png", plot=trans_trt_log_plot, height=4, width=4)
+ggsave(filename="../../figures/qRT-PCR/trans_trt_log_1inj_large.png", plot=trans_trt_log_plot, height=6, width=13)
 #ggsave(filename="../../figures/qRT-PCR/trans_trt_log_1inj.svg", plot=trans_trt_log_plot, height=4, width=4)
 ```
 
@@ -171,21 +205,32 @@ trans_g2g_plot
 
 
 trans_g2g_log_plot <- ggplot() +
-  stat_summary(data=transporters_long, aes(x=gene, y=log2(rge), fill=gene),
+  stat_summary(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=gene),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
-  geom_errorbar(data=trans_sumstats, aes(x=gene, ymin=log2_mean-log2_sd,
-                                         ymax=log2_mean+log2_sd, fill=gene),
-                width=0.2, position=position_dodge(width=0.75)) +
-  geom_point(data=transporters_long, aes(x=gene, y=log2(rge), fill=gene),
-             position=position_dodge(width=0.75)) +
-  facet_grid(Tissue~Treatment, scales="free_y") +
-  scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
-  scale_fill_manual(values=c("springgreen3", "hotpink")) +
-  theme_bw()
+  geom_errorbar(data=trans_sumstats, aes(x=Treatment, ymin=log2_mean-log2_se,
+                                         ymax=log2_mean+log2_se, fill=gene),
+                width=0.25, position=position_dodge(width=0.75)) +
+  geom_point(data=transporters_long, aes(x=Treatment, y=log2(rge), fill=gene),
+             size=2, stat="identity", position=position_dodge(width=0.75)) +
+  facet_wrap(~Tissue, ncol=2) +
+  #scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
+  ylim(-0.6, 2.5) +
+  theme_bw(20) %+replace%
+    theme(legend.title = element_blank(),
+          legend.box.spacing = unit(1, "pt"),
+          axis.title.x=element_blank(),
+          strip.background = element_rect(color="transparent", fill="transparent",
+                                          size=0, linetype="solid")
+          ) +
+  scale_fill_manual(values=c("springgreen3", "hotpink"),
+                    labels=c("Pgp" = "P-gp", "Bcrp" = "Bcrp")) +
+  scale_x_discrete(labels=c("M" = "Males", "Flo" = "Low E/P\nfemales",
+                            "Fhi" = "High E/P\nfemales")) +
+  ylab(expression(log[2](RGE)))
 
 trans_g2g_log_plot
 
-#ggsave(filename="../../figures/qRT-PCR/trans_g2g_log_1inj.png", plot=trans_g2g_log_plot, height=4, width=4)
+ggsave(filename="../../figures/qRT-PCR/trans_g2g_log_1inj_large.png", plot=trans_g2g_log_plot, height=6, width=11)
 #ggsave(filename="../../figures/qRT-PCR/trans_g2g_log_1inj.svg", plot=trans_g2g_log_plot, height=4, width=4)
 ```
 
