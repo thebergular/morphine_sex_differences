@@ -37,23 +37,35 @@ head(regression)
 ```
 
 ```{r}
-pgp_plot <- ggplot(regression, aes(pgp, conc_wt, col=tissue)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = T) +
+pgp_plot <- ggplot(regression, aes(pgp, conc_wt)) +
+  geom_point(col="black") +
+  geom_smooth(method = "lm", se = T, aes(fill=tissue, col=tissue)) +
   xlim(0,5) +
-  theme_bw()
+  theme_bw(20) +
+  ylab("[Morphine] per mg tissue (ng/mg)") +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("retina" = "Retina", "brain" = "Brain")) +
+  scale_color_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("retina" = "Retina", "brain" = "Brain"))
 
-bcrp_plot <- ggplot(regression, aes(bcrp, conc_wt, col=tissue)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = T) +
+bcrp_plot <- ggplot(regression, aes(bcrp, conc_wt)) +
+  geom_point(col="black") +
+  geom_smooth(method = "lm", se = T, aes(fill=tissue, col=tissue)) +
   xlim(0,5) +
   ylab("") +
-  theme_bw() %+replace%
-  theme(axis.text.y=element_blank())
+  theme_bw(20) %+replace%
+  theme(axis.text.y=element_blank()) +
+  scale_fill_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("retina" = "Retina", "brain" = "Brain")) +
+  scale_color_manual(values=c("dodgerblue", "goldenrod1"),
+                    labels=c("retina" = "Retina", "brain" = "Brain"))
 
 combined_correlation_plots <- ggarrange(pgp_plot, bcrp_plot, ncol=2, common.legend = TRUE, legend="bottom")
 
-#ggsave("../figures/combined_correlation_plots.png", plot=combined_correlation_plots, width=6, height =4)
+combined_correlation_plots
+
+
+#ggsave("../figures/combined_correlation_plots.svg", plot=combined_correlation_plots, width=10, height =5)
 ```
 
 ```{r}
