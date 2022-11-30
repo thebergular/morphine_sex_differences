@@ -1,0 +1,58 @@
+---
+title: "qPCR Transporter Figures"
+author: "C-T Berezin"
+date: "7/21/2022"
+output:
+  pdf_document: default
+---
+
+```{r, message=FALSE, error=FALSE}
+library(tidyverse)
+library(ggthemes)
+library(ggpubr)
+library(emmeans)
+library(lme4)
+library(car)
+library(lmerTest)
+library(svglite)
+```
+
+### Bcrp & Mrp2 "baseline" expression (qPCR)
+
+
+```{r}
+#read in the data
+bm_data <- read.csv("//Mac/Home/Documents/R_coding/data/Mrp-Bcrp-gene-study-subset-sal-ret-only.csv", fileEncoding = 'UTF-8-BOM')
+bm_data <- bm_data %>% mutate(Sample = as.factor(Sample))
+
+bm_data
+
+#get some summary statistics
+bm_sumstats <- bm_data_long %>% group_by(gene) %>% summarise(n = n(),
+                                                             mean = mean(rge),
+                                                             sd = sd(rge))
+
+bm_sumstats
+
+#make the data so we can more easily plot both genes on the same graph
+bm_data_long <- bm_data %>% pivot_longer(cols=c("Bcrp.RGE", "Mrp2.RGE"), names_to = "gene", values_to="rge")
+
+bm_data_long <- bm_data_long %>% mutate(gene = fct_recode(as.factor(gene), Bcrp = "Bcrp.RGE", Mrp2 = "Mrp2.RGE"))
+
+#plot
+bm_plot <- ggplot() +
+  stat_summary(fun = 'mean', geom="bar", width=0.75, data=bm_data_long, aes(x=gene, y=rge)) +
+  #stat_summary(fun.data = mean_se, geom = "errorbar", width=.2) +
+  geom_errorbar(width=0.2, data=bm_sumstats, aes(x=gene, ymin=mean-sd, ymax=mean+sd)) +
+  geom_point(size=2, aes(x=gene, y=rge), data=bm_data_long) +
+  geom_line(data=bm_data_long, aes(x=gene, y=rge, group=Sample)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
+  theme_bw() +
+  labs(x="Gene", y="Relative Gene Expression")
+
+bm_plot
+
+#save plot as PNG or SVG
+#ggsave("//Mac/Home/Documents/R_coding/figures/bcrp_mrp2_plot.png", plot=bm_plot, height=4, width=4)
+
+```
