@@ -138,7 +138,7 @@ plotall_stage <- ggplot() +
 
 plotall_stage
 #ggsave("../figures/conc_all_stage.png", plot=plotall_stage, width=6, height=4)
-ggsave("../figures/conc_all_stage_large.svg", plot=plotall_stage, width=9, height=4)
+#ggsave("../figures/conc_all_stage_large.svg", plot=plotall_stage, width=9, height=4)
 
 plotall_stageL <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_raw_log, fill=group),
@@ -161,7 +161,7 @@ plotall_stageL <- ggplot() +
 
 plotall_stageL
 #ggsave("../figures/conc_all_stage_log.png", plot=plotall_stageL, width=6, height=4)
-ggsave("../figures/conc_all_stage_log_large.svg", plot=plotall_stageL, width=9, height=4)
+#ggsave("../figures/conc_all_stage_log_large.svg", plot=plotall_stageL, width=9, height=4)
 ```
 
 Statistical analysis
@@ -175,7 +175,7 @@ lmer_diff_all_log <- lmer(log(raw_conc) ~ group*tissue+(1|animal), data =sex_dif
 plot(lmer_diff_all_log, type=c("p","smooth"), col.line=1)
 lattice::qqmath(lmer_diff_all_log)
 
-Anova(lmer_diff_all_log, type="3")
+anova(lmer_diff_all_log)
 emmeans::emmeans(lmer_diff_all_log, pairwise ~ tissue| group)$contrasts
 emmeans::emmeans(lmer_diff_all_log, pairwise ~ group| tissue)$contrasts
 
@@ -210,7 +210,7 @@ plot_tissue <- ggplot() +
 
 plot_tissue
 #ggsave("../figures/conc_tissue.png", plot=plot_tissue, width=6, height=4)
-ggsave("../figures/conc_tissue_large.svg", plot=plot_tissue,width=8, height=4)
+#ggsave("../figures/conc_tissue_large.svg", plot=plot_tissue,width=8, height=4)
 
 plot_tissueL <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=group, y=log_conc, fill=tissue),
@@ -232,7 +232,7 @@ plot_tissueL <- ggplot() +
 
 plot_tissueL
 #ggsave("../figures/conc_tissue_log.png", plot=plot_tissueL, width=6, height=4)
-ggsave("../figures/conc_tissue_log_large.svg", plot=plot_tissueL, width=8, height=4)
+#ggsave("../figures/conc_tissue_log_large.svg", plot=plot_tissueL, width=8, height=4)
 
 plot_stage <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=tissue, y=mean_conc_wt, fill=group),
@@ -292,7 +292,8 @@ Statstical analysis for differences between groups and tissues
 lmer_diff <- lmer(log(conc_wt) ~ group*tissue+(1|animal), data =sex_diff)
 plot(lmer_diff, type=c("p","smooth"), col.line=1)
 lattice::qqmath(lmer_diff)
-Anova(lmer_diff, type="3")
+
+anova(lmer_diff)
 emmeans::emmeans(lmer_diff, pairwise ~ tissue| group)$contrasts
 emmeans::emmeans(lmer_diff, pairwise ~ group| tissue)$contrasts
 #shapiro.test(resid(lmer_diff))
