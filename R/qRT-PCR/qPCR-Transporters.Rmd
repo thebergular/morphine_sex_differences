@@ -87,7 +87,7 @@ c_bcrp_sumstats
 
 ```{r}
 #visualizing tissue effect per treatment
-c_bcrp_plot <- ggplot() +
+c_bcrp_tiss_plot <- ggplot() +
   stat_summary(data=chronic, aes(x=Treatment, y=Bcrp.RGE, fill=Tissue), fun='mean',
                geom="bar", width=0.75, position=position_dodge(width=0.75)) +
   geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=mean-se,
@@ -105,23 +105,23 @@ c_bcrp_plot <- ggplot() +
   xlab("") +
   ylab(expression(RGE[Bcrp]))
 
-c_bcrp_plot
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_effect_plot.png", plot=c_bcrp_plot, height=4, width=4)
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_effect_plot.svg", plot=c_bcrp_plot, height=4, width=4)
+c_bcrp_tiss_plot
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_plot.png", plot=c_bcrp_tiss_plot, height=4, width=4)
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_plot.svg", plot=c_bcrp_tiss_plot, height=4, width=4)
 
-c_bcrp_log_plot <- ggplot() +
+c_bcrp_tiss_log_plot <- ggplot() +
   stat_summary(data=chronic, aes(x=Treatment, y=log2(Bcrp.RGE), fill=Tissue),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
   geom_errorbar(data=c_bcrp_sumstats, aes(x=Treatment, ymin=log2_mean-log2_se,
                                          ymax=log2_mean+log2_se, fill=Tissue),
                 width=0.25, position=position_dodge(width=0.75)) +
   geom_point(data=chronic, aes(x=Treatment, y=log2(Bcrp.RGE), fill=Tissue),
-             size=2, stat="identity", position=position_dodge(width=0.75)) +
+             stat="identity", position=position_dodge(width=0.75)) +
   #facet_grid(~Tissue, scales="free_y") +
   #scale_y_continuous(expand = expansion(mult = c(0.1, 0.2))) +
   ylim(-0.6, 2.5) +
   #scale_fill_manual(values=c("maroon1", "springgreen3")) +
-  theme_bw(base_size = 20) %+replace%
+  theme_bw(base_size = 12) %+replace%
     theme(legend.title = element_blank(),
           legend.box.spacing = unit(1, "pt"),
           axis.title.x=element_blank(),
@@ -131,16 +131,15 @@ c_bcrp_log_plot <- ggplot() +
                     labels=c("Retina", "Brain")) +
   scale_x_discrete(labels=c("S" = "Saline", "C" = "Morphine")) +
   xlab("") +
-  ylab(expression(log[2](RGE))) +
-  ggtitle("Bcrp")
+  ylab(expression(log[2](RGE)))
 
-c_bcrp_log_plot
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_log_plot_large.svg", plot=c_bcrp_log_plot, height=5, width=6)
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_log_plot.svg", plot=c_bcrp_log_plot, height=4, width=4)
+c_bcrp_tiss_log_plot
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_log_plot.png", plot=c_bcrp_tiss_log_plot, height=4, width=4)
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_log_plot.svg", plot=c_bcrp_tiss_log_plot, height=4, width=4)
 
 
 #visualizing treatment effect per tissue
-c_bcrp_tiss_plot <- ggplot() +
+c_bcrp_trt_plot <- ggplot() +
   stat_summary(data=chronic, aes(x=Tissue, y=Bcrp.RGE, fill=Treatment),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
   geom_errorbar(data=c_bcrp_sumstats, aes(x=Tissue, ymin=mean-se,
@@ -155,23 +154,23 @@ c_bcrp_tiss_plot <- ggplot() +
                     labels=c("Saline", "Morphine")) +
   scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain")) +
   xlab("") +
-  ylab(expression(log[2](RGE[Bcrp])))
+  ylab(expression(RGE[Bcrp]))
 
-c_bcrp_tiss_plot
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_plot.png", plot=c_bcrp_tiss_plot, height=4, width=4)
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_plot.svg", plot=c_bcrp_tiss_plot, height=4, width=4)
+c_bcrp_trt_plot
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_trt_plot.png", plot=c_bcrp_trt_plot, height=4, width=4)
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_trt_plot.svg", plot=c_bcrp_trt_plot, height=4, width=4)
 
-c_bcrp_tiss_log_plot <- ggplot() +
+c_bcrp_trt_log_plot <- ggplot() +
   stat_summary(data=chronic, aes(x=Tissue, y=log2(Bcrp.RGE), fill=Treatment),
                fun = 'mean', geom="bar", width=0.75, position="dodge") +
   geom_errorbar(data=c_bcrp_sumstats, aes(x=Tissue, ymin=log2_mean-log2_se,
                                          ymax=log2_mean+log2_se, fill=Treatment),
                 width=0.25, position=position_dodge(width=0.75)) +
   geom_point(data=chronic, aes(x=Tissue, y=log2(Bcrp.RGE), fill=Treatment),
-             size=2, stat="identity", position=position_dodge(width=0.75)) +
+             stat="identity", position=position_dodge(width=0.75)) +
   #scale_y_continuous(expand = expansion(mult = c(0.1, 0.25))) +
   ylim(-0.6, 2.5) +
-  theme_bw(base_size = 20) %+replace%
+  theme_bw(base_size = 12) %+replace%
     theme(legend.title = element_blank(),
           legend.box.spacing = unit(1, "pt"),
           axis.title.x=element_blank(),
@@ -180,13 +179,12 @@ c_bcrp_tiss_log_plot <- ggplot() +
                     labels=c("Saline", "Morphine")) +
   scale_x_discrete(labels=c("ret" = "Retina", "hyp" = "Brain")) +
   xlab("") +
-  ylab(expression(log[2](RGE))) +
-  ggtitle("Bcrp")
+  ylab(expression(log[2](RGE)))
 
-c_bcrp_tiss_log_plot
+c_bcrp_trt_log_plot
 
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_log_plot.png", plot=c_bcrp_tiss_log_plot, height=4, width=4)
-#ggsave(filename="../../figures/qRT-PCR/c_bcrp_tiss_log_plot_large.png", plot=c_bcrp_tiss_log_plot, height=6, width=6)
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_trt_log_plot.png", plot=c_bcrp_trt_log_plot, height=4, width=4)
+#ggsave(filename="../../figures/qRT-PCR/c_bcrp_trt_log_plot.svg", plot=c_bcrp_trt_log_plot, height=4, width=4)
 ```
 
 ### Chronic morphine Bcrp test WITH P-gp in stats
@@ -267,47 +265,13 @@ chronic_log_plot
 ### RERUN STATS WITH LOG2 ON DATA ORIGINALLY PUBLISHED IN BERGUM 2022 (p-gp chronic morphine/saline)
 
 ```{r}
-getwd()
-pgp <- read.csv("../data/Abcb1a-ret-hyp-totalnb.csv", fileEncoding = 'UTF-8-BOM')
+pgp <- read.csv("../../data/qRT-PCR/pgp-Bergum2022a.csv", fileEncoding = 'UTF-8-BOM')
 pgp <- pgp %>% mutate(Tissue = fct_relevel(Tissue, c("retina", "hypothalamus")),
                       Treatment = fct_relevel(as.factor(Treatment), c("saline", "morphine")))
 #removing the outlier
 pgp <- pgp %>% filter(RelativeGE<3.5)
 pgp
-pgp_plot <- pgp %>% ggplot(aes(x=Treatment, y=RelativeGE)) +
-  stat_summary(fun = 'mean', geom="bar", aes(fill=Tissue)) +
-  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
-  geom_point() +
-  facet_wrap(~Tissue) +
-  theme_bw() %+replace%
-  theme(axis.title.x=element_blank(),
-        legend.position = "none") +
-  labs(y="Relative Gene Expression") +
-  scale_fill_manual(values = c("dodgerblue", "goldenrod1"))
-pgp_plot
 
-pgp_plot1 <- pgp %>% ggplot(aes(x=Tissue, y=RelativeGE)) +
-  stat_summary(fun = 'mean', geom="bar", aes(fill=Treatment),
-               width=0.75, position="dodge") +
-  stat_summary(fun.data = mean_se, geom = "errorbar", width=0.25,
-               position=position_dodge(width=0.75)) +
-  geom_point(stat="identity", position=position_dodge(width=0.75)) +
-  facet_wrap(~Treatment) +
-  theme_bw(base_size = 12) %+replace%
-  theme(axis.title.x=element_blank(),
-        legend.title = element_blank()) +
-  labs(y="Relative Gene Expression") +
-  scale_fill_manual(values = c("gray70", "red4"),
-                    labels=c("Saline", "Morphine")) +
-  scale_x_discrete(labels=c("retina" = "Retina", "hypothalamus" = "Brain")) +
-  xlab("") #+
-  #ylab(RGE[P-gp]))
-pgp_plot1
-
-#ggsave(filename = "pgp_plot.svg", plot = pgp_plot, height=4, width=4)
-```
-
-```{r}
 shapiro.test(pgp$RelativeGE)
 shapiro.test(sqrt(pgp$RelativeGE))
 #normal
@@ -340,13 +304,13 @@ emmeans::emmeans(pgp_log2_lmer, pairwise ~ Tissue | Treatment)
 ```
 
 ```{r}
-pgp_log_plot <- pgp %>% ggplot(aes(x=Treatment, y=log2RGE, fill=Tissue)) +
+pgp_log2_tiss_plot <- pgp %>% ggplot(aes(x=Treatment, y=log2RGE, fill=Tissue)) +
   stat_summary(fun = 'mean', geom="bar", aes(fill=Tissue),
                width=0.75, position="dodge") +
   stat_summary(fun.data = mean_se, geom = "errorbar", width=0.25,
                position=position_dodge(width=0.75)) +
-  geom_point(stat="identity", position=position_dodge(width=0.75), size=2) +
-  theme_bw(base_size = 20) %+replace%
+  geom_point(stat="identity", position=position_dodge(width=0.75)) +
+  theme_bw(base_size = 12) %+replace%
   theme(axis.title.x=element_blank(),
         legend.title = element_blank(),
         legend.box.spacing = unit(1, "pt"),
@@ -357,20 +321,19 @@ pgp_log_plot <- pgp %>% ggplot(aes(x=Treatment, y=log2RGE, fill=Tissue)) +
   scale_fill_manual(values = c("dodgerblue", "goldenrod1"),
                     labels = c("Retina", "Brain")) +
   scale_x_discrete(labels=c("saline" = "Saline", "morphine" = "Morphine")) +
-  ylab(expression(log[2](RGE))) +
-  ggtitle("P-gp")
+  ylab(expression(log[2](RGE)))
 
-pgp_log_plot
-ggsave(filename = "../figures/pgp_log_plot_trt_large.svg", plot = pgp_log_plot, height=5, width=6)
+pgp_log2_tiss_plot
+#ggsave(filename = "../figures/pgp_log2_tiss_plot.png", plot = pgp_log2_tiss_plot, height=4, width=4)
 
 
-pgp_log_plot1 <- pgp %>% ggplot(aes(x=Tissue, y=log2RGE, fill=Treatment)) +
+pgp_log2_trt_plot <- pgp %>% ggplot(aes(x=Tissue, y=log2RGE, fill=Treatment)) +
   stat_summary(fun = 'mean', geom="bar", aes(fill=Treatment),
                width=0.75, position="dodge") +
   stat_summary(fun.data = mean_se, geom = "errorbar", width=0.25,
                position=position_dodge(width=0.75)) +
-  geom_point(stat="identity", position=position_dodge(width=0.75), size=2) +
-  theme_bw(base_size = 20) %+replace%
+  geom_point(stat="identity", position=position_dodge(width=0.75)) +
+  theme_bw(base_size = 12) %+replace%
   theme(axis.title.x=element_blank(),
         legend.title = element_blank(),
         legend.box.spacing = unit(1, "pt"),
@@ -381,11 +344,10 @@ pgp_log_plot1 <- pgp %>% ggplot(aes(x=Tissue, y=log2RGE, fill=Treatment)) +
   scale_fill_manual(values = c("gray70", "red4"),
                     labels=c("Saline", "Morphine")) +
   scale_x_discrete(labels=c("retina" = "Retina", "hypothalamus" = "Brain")) +
-  ylab(expression(log[2](RGE))) +
-  ggtitle("P-gp")
+  ylab(expression(log[2](RGE)))
 
-pgp_log_plot1
-ggsave(filename = "../../figures/pgp_log_plot_trt1_large.svg", plot = pgp_log_plot1, height=6, width=6)
+pgp_log2_trt_plot
+#ggsave(filename = "../../figures/pgp_log2_trt_plot.png", plot = pgp_log2_trt_plot, height=4, width=4)
 ```
 
 
