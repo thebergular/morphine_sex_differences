@@ -42,6 +42,35 @@ test_out <- rosnerTest(sex_diff$conc_wt,
 )
 test_out
 
+SumStat_tissue <- dplyr::summarise(group_by(sex_diff, tissue),
+  n = n(),
+  mean_tissue_wt = mean(tissue_weight),
+  sd_tissue_wt = sd(tissue_weight),
+  se_tissue_wt = sd_tissue_wt/sqrt(n),
+)
+SumStat_tissue
+
+SumStat_all <- dplyr::summarise(group_by(sex_diff, tissue),
+  n = n(),
+  mean_conc_raw = mean(raw_conc),
+  sd_conc_raw = sd(raw_conc),
+  se_conc_raw = sd_conc_raw/sqrt(n),
+  mean_conc_raw_log = mean(log(raw_conc)),
+  sd_conc_raw_log = sd(log(raw_conc)),
+  se_conc_raw_log = sd_conc_raw_log/sqrt(n),
+  mean_conc_wt = mean(conc_wt),
+  sd_conc_wt = sd(conc_wt),
+  se_conc_wt = sd_conc_wt/sqrt(n),
+  log_conc = mean(log(conc_wt)),
+  sd_conc_log = sd(log(conc_wt)),
+  se_conc_log = sd_conc_log/sqrt(n),
+  mean_wt = mean(body_wt),
+  sd_wt = sd(body_wt),
+  mean_dose = mean(dose),
+  sd_dose = sd(dose),
+)
+
+SumStat_all
 
 SumStat_sexdiff <- dplyr::summarise(group_by(sex_diff, tissue, group),
   n = n(),
@@ -189,6 +218,7 @@ emmeans::emmeans(lmer_diff_all_log, pairwise ~ group| tissue)$contrasts
 ```{r}
 sex_diff <- sex_diff %>% filter(tissue != "plasma")
 SumStat_sexdiff <- SumStat_sexdiff %>% filter(tissue != "plasma")
+SumStat_sexdiff
 
 plot_tissue <- ggplot() + 
   geom_bar(data=SumStat_sexdiff, aes(x=group, y=mean_conc_wt, fill=tissue),
