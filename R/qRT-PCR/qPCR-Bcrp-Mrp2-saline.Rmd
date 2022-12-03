@@ -44,16 +44,26 @@ bm_plot <- ggplot() +
   stat_summary(fun = 'mean', geom="bar", width=0.75, data=bm_data_long, aes(x=gene, y=rge)) +
   #stat_summary(fun.data = mean_se, geom = "errorbar", width=.2) +
   geom_errorbar(width=0.2, data=bm_sumstats, aes(x=gene, ymin=mean-sd, ymax=mean+sd)) +
-  geom_point(size=2, aes(x=gene, y=rge), data=bm_data_long) +
+  geom_point(aes(x=gene, y=rge), data=bm_data_long) +
   geom_line(data=bm_data_long, aes(x=gene, y=rge, group=Sample)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
-  theme_bw() +
+  theme_bw(12) +
   labs(x="Gene", y="Relative Gene Expression")
 
 bm_plot
 
-#save plot as PNG or SVG
-#ggsave("../figures/qRT-PCR/bcrp_mrp2_plot.svg", plot=bm_plot, height=4, width=4)
+ggsave("../../figures/qRT-PCR/bcrp_mrp2_plot.png", plot=bm_plot, height=4, width=4)
+ggsave("../../figures/qRT-PCR/bcrp_mrp2_plot.svg", plot=bm_plot, height=4, width=4)
+
+#checking assumptions of t-test
+#normality
+shapiro.test(bm_data$Bcrp.RGE)
+shapiro.test(bm_data$Mrp2.RGE)
+ggqqplot(bm_data, x = "Bcrp.RGE")
+ggqqplot(bm_data, x = "Mrp2.RGE")
+#no sig outliers in the difference between the groups
+bm_data_stats <- bm_data %>% mutate(differences = Bcrp.RGE - Mrp2.RGE)
+rstatix::identify_outliers(data=bm_data_stats, differences)
 
 t.test(rge ~ gene, data=bm_data_long, paired=TRUE)
 
