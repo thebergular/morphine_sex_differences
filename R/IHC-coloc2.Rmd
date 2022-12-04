@@ -1,0 +1,424 @@
+---
+title: "Transporter  (P-gp) Colocalization Analysis (ImageJ Coloc2)"
+author: "CT Berezin"
+date: "2022-08-18"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(openxlsx)
+library(coin)
+library(viridis)
+library(ggpubr)
+```
+
+M1 = occludin overlapping P-gp/Bcrp/Mrp2
+M2 = P-gp/Bcrp/Mrp2 overlapping occludin
+
+## Reading in the data
+
+### P-gp
+
+```{r}
+pgp_filelist <- list.files(path="../data/IHC/coloc2_results_pgp/", pattern="*.txt", full.names = TRUE)
+pgp_cols <- c("sample", "m1", "m2", "r_pearson", "Pval", "r_rand", "sd_rand")
+pgp_coloc2 <- as.data.frame(matrix(,1,length(pgp_cols)))
+names(pgp_coloc2) <- pgp_cols
+
+for (i in pgp_filelist) {
+  test <- read_lines(i)
+  sample <- str_subset(test, "Working on") %>% str_extract(., "(?<=:[:space:]).*")
+  r_pearson <- str_subset(test, "no threshold") %>% str_extract(., "(?<=,[:space:]).*")
+  m1 <- str_subset(test, "tM1") %>% str_extract(., "(?<=,[:space:]).*")
+  m2 <- str_subset(test, "tM2") %>% str_extract(., "(?<=,[:space:]).*")
+  Pval <- str_subset(test, "P-Value") %>% str_extract(., "(?<=,[:space:]).*")
+  r_rand <- str_subset(test, "Costes Shuffled Mean") %>% str_extract(., "(?<=,[:space:]).*")
+  sd_rand <- str_subset(test, "Costes Shuffled Std") %>% str_extract(., "(?<=,[:space:]).*")
+  res <- c(all_of(sample), all_of(m1), all_of(m2), all_of(r_pearson), all_of(Pval), all_of(r_rand), all_of(sd_rand))
+  pgp_coloc2 <- rbind(pgp_coloc2, res)
+}
+
+pgp_coloc2 <- pgp_coloc2 %>% na.omit(pgp_coloc2) %>%
+  mutate(sex = as.factor(str_sub(sample, start=1L, end=1L)),
+        mouseID = as.factor(str_extract(sample, "(?<=-)[:digit:]+")),
+        prep = as.factor(str_extract(sample, "[:lower:]{2,}")),
+        image = str_extract(sample, "[:alpha:]{2,}.*"), .before=m1)
+
+pgp_coloc2 <- pgp_coloc2 %>% select(-sample) %>%
+  mutate(m1 = as.double(m1),
+        m2 = as.double(m2),
+        r_pearson = as.double(r_pearson),
+        Pval = as.double(Pval),
+        r_rand = as.double(r_rand),
+        sd_rand = as.double(sd_rand),
+        coloc = Pval>0.95)
+
+#write.xlsx(pgp_coloc2, "../data/IHC/coloc2-pgp-totals.xlsx")
+
+head(pgp_coloc2)
+```
+
+### Mrp2
+
+```{r}
+mrp2_filelist <- list.files(path="../data/IHC/coloc2_results_mrp2/", pattern="*.txt", full.names = TRUE)
+mrp2_cols <- c("sample", "m1", "m2", "r_pearson", "Pval", "r_rand", "sd_rand")
+mrp2_coloc2 <- as.data.frame(matrix(,1,length(mrp2_cols)))
+names(mrp2_coloc2) <- mrp2_cols
+
+for (i in mrp2_filelist) {
+  test <- read_lines(i)
+  sample <- str_subset(test, "Working on") %>% str_extract(., "(?<=:[:space:]).*")
+  r_pearson <- str_subset(test, "no threshold") %>% str_extract(., "(?<=,[:space:]).*")
+  m1 <- str_subset(test, "tM1") %>% str_extract(., "(?<=,[:space:]).*")
+  m2 <- str_subset(test, "tM2") %>% str_extract(., "(?<=,[:space:]).*")
+  Pval <- str_subset(test, "P-Value") %>% str_extract(., "(?<=,[:space:]).*")
+  r_rand <- str_subset(test, "Costes Shuffled Mean") %>% str_extract(., "(?<=,[:space:]).*")
+  sd_rand <- str_subset(test, "Costes Shuffled Std") %>% str_extract(., "(?<=,[:space:]).*")
+  res <- c(all_of(sample), all_of(m1), all_of(m2), all_of(r_pearson), all_of(Pval), all_of(r_rand), all_of(sd_rand))
+  mrp2_coloc2 <- rbind(mrp2_coloc2, res)
+}
+
+mrp2_coloc2 <- mrp2_coloc2 %>% na.omit(mrp2_coloc2) %>%
+  mutate(sex = as.factor(str_sub(sample, start=1L, end=1L)),
+          mouseID = as.factor(str_extract(sample, "(?<=-)[:digit:]+")),
+          image = str_extract(sample, "s.*(?=_)"),
+          roi = str_extract(sample, "(?<=_).*"), .before=m1)
+
+mrp2_coloc2 <- mrp2_coloc2 %>% select(-sample) %>%
+  mutate(m1 = as.double(m1),
+        m2 = as.double(m2),
+        r_pearson = as.double(r_pearson),
+        Pval = as.double(Pval),
+        r_rand = as.double(r_rand),
+        sd_rand = as.double(sd_rand),
+        coloc = Pval>0.95)
+
+#write.xlsx(mrp2_coloc2, "../data/IHC/coloc2-mrp2-totals.xlsx")
+
+head(mrp2_coloc2)
+```
+
+## Generating summary statistics
+
+### P-gp
+
+```{r}
+pgp_sumstats <- pgp_coloc2 %>% summarise(m1_mean = mean(m1),
+                     m1_sd = sd(m1),
+                     m2_mean = mean(m2),
+                     m2_sd = sd(m2),
+                     r_mean = mean(r_pearson),
+                     r_sd = sd(r_pearson),
+                     n_total = n(),
+                     n_coloc = sum(coloc)
+                     )
+pgp_sumstats
+
+mrp2_sumstats <- mrp2_coloc2 %>% summarise(m1_mean = mean(m1),
+                     m1_sd = sd(m1),
+                     m2_mean = mean(m2),
+                     m2_sd = sd(m2),
+                     r_mean = mean(r_pearson),
+                     r_sd = sd(r_pearson),
+                     n_total = n(),
+                     n_coloc = sum(coloc)
+                     )
+mrp2_sumstats
+
+mrp2_sumstats_image <- mrp2_coloc2 %>% group_by(image,mouseID,sex,coloc) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+mrp2_sumstats_image
+
+pgp_sumstats_animals <- pgp_coloc2 %>% group_by(mouseID,sex,prep) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+pgp_sumstats_animals
+
+mrp2_sumstats_animals <- mrp2_coloc2 %>% group_by(mouseID,sex,coloc) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+mrp2_sumstats_animals
+
+pgp_sumstats_sex <- pgp_coloc2 %>% group_by(sex) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+pgp_sumstats_sex
+
+mrp2_sumstats_sex <- mrp2_coloc2 %>% group_by(sex) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)
+             )
+mrp2_sumstats_sex
+
+pgp_sumstats_prep <- pgp_coloc2 %>% group_by(prep) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             mean_P = mean(Pval)
+             )
+pgp_sumstats_prep
+
+mrp2_sumstats_coloc <- mrp2_coloc2 %>% group_by(coloc) %>% 
+  summarise(m1_mean = mean(m1),
+             m1_sd = sd(m1),
+             m2_mean = mean(m2),
+             m2_sd = sd(m2),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             mean_P = mean(Pval)
+             )
+mrp2_sumstats_coloc
+```
+
+## Statistical Tests
+
+```{r}
+pgp_coloc2$coloc <- as.factor(pgp_coloc2$coloc)
+
+coin::wilcox_test(pgp_coloc2$r_pearson ~ pgp_coloc2$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_coloc2$m1 ~ pgp_coloc2$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_coloc2$m2 ~ pgp_coloc2$sex, conf.int=TRUE, distribution="exact")
+
+coin::wilcox_test(pgp_coloc2$r_pearson ~ pgp_coloc2$prep, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_coloc2$m1 ~ pgp_coloc2$prep, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_coloc2$m2 ~ pgp_coloc2$prep, conf.int=TRUE, distribution="exact")
+
+
+
+coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+
+coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
+
+```
+
+```{r}
+mrp2_coloc2$coloc <- as.factor(mrp2_coloc2$coloc)
+mrp2_sumstats_animals$coloc <- as.factor(mrp2_sumstats_animals$coloc)
+mrp2_sumstats_image$coloc <- as.factor(mrp2_sumstats_image$coloc)
+
+coin::wilcox_test(mrp2_coloc2$r_pearson ~ mrp2_coloc2$coloc, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_coloc2$m1 ~ mrp2_coloc2$coloc, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_coloc2$m2 ~ mrp2_coloc2$coloc, conf.int=TRUE, distribution="exact")
+
+coin::wilcox_test(mrp2_coloc2$r_pearson ~ mrp2_coloc2$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_coloc2$m1 ~ mrp2_coloc2$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_coloc2$m2 ~ mrp2_coloc2$sex, conf.int=TRUE, distribution="exact")
+
+
+coin::wilcox_test(mrp2_sumstats_image$r_mean ~ mrp2_sumstats_image$coloc, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_image$m1_mean ~ mrp2_sumstats_image$coloc, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_image$m2_mean ~ mrp2_sumstats_image$coloc, conf.int=TRUE, distribution="exact")
+
+coin::wilcox_test(mrp2_sumstats_image$r_mean ~ mrp2_sumstats_image$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_image$m1_mean ~ mrp2_sumstats_image$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_image$m2_mean ~ mrp2_sumstats_image$sex, conf.int=TRUE, distribution="exact")
+
+
+coin::wilcox_test(mrp2_sumstats_animals$r_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE)
+coin::wilcox_test(mrp2_sumstats_animals$m2_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE, distribution="exact")
+
+coin::wilcox_test(mrp2_sumstats_animals$r_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_sumstats_animals$m2_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+```
+
+## Plotting the data
+
+  
+```{r}
+pgp_coloc2$coloc <- as.logical(pgp_coloc2$coloc)
+pgp_coloc2$mouseID <- as.factor(pgp_coloc2$mouseID)
+
+pgp_coloc2_long <- pgp_coloc2 %>% pivot_longer(cols = m1:m2, names_to = "m_stat_type", values_to = "m_stat_val")
+
+pgp_coloc2_long <- pgp_coloc2_long %>% group_by(mouseID, m_stat_type, prep, sex) %>%
+  summarise(m_mean = mean(m_stat_val),
+             m_sd = sd(m_stat_val),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc))
+
+#per image
+pgp_coloc2 %>% ggplot(aes(x=prep, y=r_pearson)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+pgp_m1_plot <- ggplot(pgp_coloc2, aes(x=prep, y=m1)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+pgp_m2_plot <- ggplot(pgp_coloc2, aes(x=prep, y=m2)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) + 
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+ggarrange(pgp_m1_plot, pgp_m2_plot, common.legend=TRUE, legend="right")
+
+#per animal
+pgp_coloc2_long %>% ggplot(aes(x=prep, y=r_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+ggplot(pgp_coloc2_long, aes(x=prep, y=m_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) + 
+  geom_point(aes(color=mouseID, shape=sex)) +
+  facet_wrap(~m_stat_type) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+```
+
+```{r}
+mrp2_coloc2$coloc <- as.logical(mrp2_coloc2$coloc)
+
+mrp2_coloc2_long <- mrp2_coloc2 %>% pivot_longer(cols = m1:m2, names_to = "m_stat_type", values_to = "m_stat_val")
+
+mrp2_coloc2_long <- mrp2_coloc2_long %>% group_by(mouseID, coloc, m_stat_type, sex) %>%
+  summarise(m_stat_type = as.factor(m_stat_type),
+            m_mean = mean(m_stat_val),
+             m_sd = sd(m_stat_val),
+             r_mean = mean(r_pearson),
+             r_sd = sd(r_pearson),
+             n_total = n(),
+             n_coloc = sum(coloc)) %>% ungroup()
+#per roi
+mrp2_coloc2 %>% ggplot(aes(x=coloc, y=r_pearson)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+mrp2_m1_plot <- ggplot(mrp2_coloc2, aes(x=coloc, y=m1)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+mrp2_m2_plot <- ggplot(mrp2_coloc2, aes(x=coloc, y=m2)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) + 
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+ggarrange(mrp2_m1_plot, mrp2_m2_plot, common.legend=TRUE, legend="right")
+
+#per image
+mrp2_sumstats_image %>% ggplot(aes(x=coloc, y=r_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+mrp2_m1_plot_image <- mrp2_sumstats_image %>% ggplot(aes(x=coloc, y=m1_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+mrp2_m2_plot_image <- mrp2_sumstats_image %>% ggplot(aes(x=coloc, y=m2_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) +  
+  geom_point(aes(color=mouseID, shape=sex)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+ggarrange(mrp2_m1_plot_image, mrp2_m2_plot_image, common.legend=TRUE, legend="right")
+
+#per animal
+ggplot(mrp2_coloc2_long, aes(x=coloc, y=m_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) + 
+  geom_point(aes(shape=sex)) +
+  geom_line(aes(group=mouseID, color=mouseID)) +
+  facet_wrap(~m_stat_type) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+
+ggplot(mrp2_coloc2_long, aes(x=coloc, y=r_mean)) +
+  stat_summary(fun = 'mean', geom="bar", width=0.7) +
+  stat_summary(fun.data = mean_se,  
+                 geom = "errorbar", width=0.1) + 
+  geom_point(aes(shape=sex)) +
+  geom_line(aes(group=mouseID, color=mouseID)) +
+  scale_color_viridis(discrete="TRUE") +
+  theme_bw()
+```
+
