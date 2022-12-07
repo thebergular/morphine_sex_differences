@@ -249,6 +249,14 @@ mrp2_sumstats_animals <- mrp2_coloc2 %>% group_by(mouseID,sex,coloc) %>%
              n_total = n(),
              n_coloc = sum(coloc)
              )
+uneven <- mrp2_sumstats_animals %>% group_by(mouseID) %>%
+  summarise(n = n(), coloc = coloc, sex=sex) %>%
+  filter(n==1) %>% select(-n) %>%
+  mutate(coloc = toString(as.integer(coloc))) %>% 
+  mutate(coloc = str_replace(toString(coloc), pattern = "0", replacement = "1")) %>% 
+  mutate(coloc = as.logical(as.integer(coloc)))
+
+mrp2_sumstats_animals <- rbind(mrp2_sumstats_animals, uneven) %>% arrange(., mouseID)
 mrp2_sumstats_animals
 
 pgp_sumstats_sex <- pgp_coloc2 %>% group_by(sex) %>% 
@@ -349,10 +357,14 @@ coin::wilcox_test(bcrp_sumstats_animals$m2_mean ~ bcrp_sumstats_animals$sex, con
 ```{r}
 mrp2_sumstats_animals$coloc <- as.factor(mrp2_sumstats_animals$coloc)
 
-coin::wilcox_test(mrp2_sumstats_animals$r_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE, distribution="exact")
-#coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE)
-coin::wilcox_test(mrp2_sumstats_animals$m2_mean ~ mrp2_sumstats_animals$coloc, conf.int=TRUE, distribution="exact")
+mrp2_sumstats_animals$r_mean <- replace_na(mrp2_sumstats_animals$r_mean, 0)
+mrp2_sumstats_animals$m1_mean <- replace_na(mrp2_sumstats_animals$m1_mean, 0)
+mrp2_sumstats_animals$m2_mean <- replace_na(mrp2_sumstats_animals$m2_mean, 0)
+
+coin::wilcoxsign_test(r_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
+coin::wilcoxsign_test(m1_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
+coin::wilcoxsign_test(m2_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
+
 
 coin::wilcox_test(mrp2_sumstats_animals$r_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
 coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
