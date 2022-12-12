@@ -113,7 +113,7 @@ bcrp_coloc2 <- bcrp_coloc2 %>% select(-sample) %>%
         sd_rand = as.double(sd_rand),
         coloc = Pval>0.95)
 
-write.xlsx(bcrp_coloc2, "../data/IHC/coloc2-bcrp-totals.xlsx")
+#write.xlsx(bcrp_coloc2, "../data/IHC/coloc2-bcrp-totals.xlsx")
 
 head(bcrp_coloc2)
 ```
@@ -365,10 +365,11 @@ coin::wilcoxsign_test(r_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf
 coin::wilcoxsign_test(m1_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
 coin::wilcoxsign_test(m2_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
 
+mrp2_pos_sumstats_animals <- mrp2_sumstats_animals %>% filter(coloc== TRUE)
 
-coin::wilcox_test(mrp2_sumstats_animals$r_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(mrp2_sumstats_animals$m2_mean ~ mrp2_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_pos_sumstats_animals$r_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_pos_sumstats_animals$m1_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_pos_sumstats_animals$m2_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
 ```
 
 ## Plotting the data
@@ -588,8 +589,8 @@ bcrp_animal_r_plot1 <- bcrp_animal_r_plot + ylim(-0.05,0.65) + ggtitle("Bcrp")
 mrp2_animal_r_plot1 <- mrp2_animal_r_plot + ylim(-0.05,0.65) + ggtitle("Mrp2")
 
 all_r_plot <- ggarrange(pgp_animal_r_plot1, bcrp_animal_r_plot1, mrp2_animal_r_plot1, ncol=3, common.legend=TRUE)
-ggsave("../figures/all_r_plot.png", plot=all_r_plot, width=7, height=4)
-ggsave("../figures/all_r_plot.svg", plot=all_r_plot, width=7, height=4)
+#ggsave("../figures/all_r_plot.png", plot=all_r_plot, width=7, height=4)
+#ggsave("../figures/all_r_plot.svg", plot=all_r_plot, width=7, height=4)
 
 pgp_animal_m1_plot <- ggplot(pgp_sumstats_animals, aes(x=prep, y=m1_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -626,8 +627,8 @@ mrp2_animal_m1_plot <- ggplot(mrp2_sumstats_animals, aes(x=coloc, y=m1_mean)) +
 
 
 all_m1_plot <- ggarrange(pgp_animal_m1_plot, bcrp_animal_m1_plot, mrp2_animal_m1_plot, ncol=3, common.legend=TRUE)
-ggsave("../figures/all_m1_plot.png", plot=all_m1_plot, width=7, height=4)
-ggsave("../figures/all_m1_plot.svg", plot=all_m1_plot, width=7, height=4)
+#ggsave("../figures/all_m1_plot.png", plot=all_m1_plot, width=7, height=4)
+#ggsave("../figures/all_m1_plot.svg", plot=all_m1_plot, width=7, height=4)
 
 
 
@@ -666,7 +667,7 @@ mrp2_animal_m2_plot <- ggplot(mrp2_sumstats_animals, aes(x=coloc, y=m2_mean)) +
 
 
 all_m2_plot <- ggarrange(pgp_animal_m2_plot, bcrp_animal_m2_plot, mrp2_animal_m2_plot, ncol=3, common.legend=TRUE)
-ggsave("../figures/all_m2_plot.png", plot=all_m2_plot, width=7, height=4)
-ggsave("../figures/all_m2_plot.svg", plot=all_m2_plot, width=7, height=4)
+#ggsave("../figures/all_m2_plot.png", plot=all_m2_plot, width=7, height=4)
+#ggsave("../figures/all_m2_plot.svg", plot=all_m2_plot, width=7, height=4)
 ```
 
