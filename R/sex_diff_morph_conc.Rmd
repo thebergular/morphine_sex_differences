@@ -17,6 +17,7 @@ library(rstatix)
 library(ggthemes)
 library(lme4)
 library(EnvStats)
+library(lmerTest)
 ```
 
 ## Reading in & tidying the data
@@ -189,8 +190,8 @@ plotall_stageL <- ggplot() +
   xlab("")
 
 plotall_stageL
-ggsave("../figures/conc_all_stage_log.png", plot=plotall_stageL, width=6, height=4)
-ggsave("../figures/conc_all_stage_log.svg", plot=plotall_stageL, width=6, height=4)
+#ggsave("../figures/conc_all_stage_log.png", plot=plotall_stageL, width=6, height=4)
+#ggsave("../figures/conc_all_stage_log.svg", plot=plotall_stageL, width=6, height=4)
 ```
 
 Statistical analysis
@@ -205,6 +206,7 @@ plot(lmer_diff_all_log, type=c("p","smooth"), col.line=1)
 lattice::qqmath(lmer_diff_all_log)
 
 anova(lmer_diff_all_log)
+
 emmeans::emmeans(lmer_diff_all_log, pairwise ~ tissue| group)$contrasts
 emmeans::emmeans(lmer_diff_all_log, pairwise ~ group| tissue)$contrasts
 

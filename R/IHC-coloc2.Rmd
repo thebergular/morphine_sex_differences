@@ -188,7 +188,8 @@ bcrp_sumstats <- bcrp_coloc2 %>% summarise(m1_mean = mean(m1),
                      r_mean = mean(r_pearson),
                      r_sd = sd(r_pearson),
                      n_total = n(),
-                     n_coloc = sum(coloc)
+                     n_coloc = sum(coloc),
+                     mean_P = mean(Pval)
                      )
 bcrp_sumstats
 
@@ -235,7 +236,8 @@ bcrp_sumstats_animals <- bcrp_coloc2 %>% group_by(mouseID,sex,prep) %>%
              r_mean = mean(r_pearson),
              r_sd = sd(r_pearson),
              n_total = n(),
-             n_coloc = sum(coloc)
+             n_coloc = sum(coloc),
+            mean_P = mean(Pval)
              )
 bcrp_sumstats_animals
 
