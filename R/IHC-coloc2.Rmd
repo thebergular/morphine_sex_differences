@@ -13,6 +13,7 @@ library(coin)
 library(viridis)
 library(ggpubr)
 library(svglite)
+library(car)
 ```
 
 M1 = occludin overlapping P-gp/Bcrp/Mrp2
@@ -201,7 +202,7 @@ pgp_sumstats <- pgp_coloc2 %>% summarise(m1_mean = mean(m1),
                      n_total = n(),
                      n_coloc = sum(coloc)
                      )
-
+pgp_sumstats
 
 bcrp_sumstats <- bcrp_coloc2 %>% summarise(m1_mean = mean(m1),
                      m1_sd = sd(m1),
@@ -213,7 +214,7 @@ bcrp_sumstats <- bcrp_coloc2 %>% summarise(m1_mean = mean(m1),
                      n_coloc = sum(coloc),
                      mean_P = mean(Pval)
                      )
-
+bcrp_sumstats
 
 mrp2_sumstats <- mrp2_coloc2 %>% summarise(m1_mean = mean(m1),
                      m1_sd = sd(m1),
@@ -224,7 +225,7 @@ mrp2_sumstats <- mrp2_coloc2 %>% summarise(m1_mean = mean(m1),
                      n_total = n(),
                      n_coloc = sum(coloc)
                      )
-
+mrp2_sumstats
 
 mrp2_sumstats_image <- mrp2_coloc2 %>% group_by(image,mouseID,sex,coloc) %>% 
   summarise(m1_mean = mean(m1),
@@ -273,15 +274,15 @@ mrp2_sumstats_animals <- mrp2_coloc2 %>% group_by(mouseID,sex,coloc) %>%
              n_total = n(),
              n_coloc = sum(coloc)
              )
-uneven <- mrp2_sumstats_animals %>% group_by(mouseID) %>%
+dropped <- mrp2_sumstats_animals %>% group_by(mouseID) %>%
   summarise(n = n(), coloc = coloc, sex=sex) %>%
   filter(n==1) %>% select(-n) %>%
   mutate(coloc = toString(as.integer(coloc))) %>% 
   mutate(coloc = str_replace(toString(coloc), pattern = "0", replacement = "1")) %>% 
   mutate(coloc = as.logical(as.integer(coloc)))
 
-mrp2_sumstats_animals <- rbind(mrp2_sumstats_animals, uneven) %>% arrange(., mouseID)
-mrp2_sumstats_animals
+mrp2_sumstats_animals <- rbind(mrp2_sumstats_animals, dropped) %>% arrange(., mouseID)
+mrp2_sumstats_animals <- mrp2_sumstats_animals %>% ungroup() %>% group_by(mouseID)
 
 pgp_sumstats_sex <- pgp_coloc2 %>% group_by(sex) %>% 
   summarise(m1_mean = mean(m1),
@@ -346,54 +347,7 @@ mrp2_sumstats_coloc
 
 ```
 
-## Statistical Tests
 
-```{r}
-coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
-
-coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-
-pgp_wm_sumstats <- pgp_sumstats_animals %>% filter(prep == "wm")
-
-coin::wilcox_test(pgp_wm_sumstats$r_mean ~ pgp_wm_sumstats$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_wm_sumstats$m1_mean ~ pgp_wm_sumstats$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_wm_sumstats$m2_mean ~ pgp_wm_sumstats$sex, conf.int=TRUE, distribution="exact")
-
-pgp_sect_sumstats <- pgp_sumstats_animals %>% filter(prep == "section")
-
-coin::wilcox_test(pgp_sect_sumstats$r_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_sect_sumstats$m1_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(pgp_sect_sumstats$m2_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
-```
-
-```{r}
-coin::wilcox_test(bcrp_sumstats_animals$r_mean ~ bcrp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(bcrp_sumstats_animals$m1_mean ~ bcrp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(bcrp_sumstats_animals$m2_mean ~ bcrp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-```
-
-
-```{r}
-mrp2_sumstats_animals$coloc <- as.factor(mrp2_sumstats_animals$coloc)
-
-mrp2_sumstats_animals$r_mean <- replace_na(mrp2_sumstats_animals$r_mean, 0)
-mrp2_sumstats_animals$m1_mean <- replace_na(mrp2_sumstats_animals$m1_mean, 0)
-mrp2_sumstats_animals$m2_mean <- replace_na(mrp2_sumstats_animals$m2_mean, 0)
-
-coin::wilcoxsign_test(r_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
-coin::wilcoxsign_test(m1_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
-coin::wilcoxsign_test(m2_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
-
-mrp2_pos_sumstats_animals <- mrp2_sumstats_animals %>% filter(coloc== TRUE)
-
-coin::wilcox_test(mrp2_pos_sumstats_animals$r_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(mrp2_pos_sumstats_animals$m1_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-coin::wilcox_test(mrp2_pos_sumstats_animals$m2_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
-```
 
 ## Plotting the data
 
@@ -542,4 +496,132 @@ mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long, aes(x=coloc, y=m_stat_m
 mrp2_animal_m_plot
 ggsave("../figures/mrp2_m_plot.png", plot=mrp2_animal_m_plot, width=5, height=3)
 ggsave("../figures/mrp2_m_plot.svg", plot=mrp2_animal_m_plot, width=5, height=3)
+```
+
+
+## Statistical Tests
+
+did sex affect pgp bcrp or mrp2_coloc2
+did prep affect pgp parameters
+were true and false coloc in mrp2 statistically different
+
+```{r}
+#normality
+#pgp
+car::qqPlot(pgp_sumstats_animals$r_mean)
+shapiro.test(pgp_sumstats_animals$r_mean)
+
+car::qqPlot(pgp_sumstats_animals$m1_mean)
+shapiro.test(pgp_sumstats_animals$m1_mean)
+
+car::qqPlot(pgp_sumstats_animals$m2_mean)
+shapiro.test(pgp_sumstats_animals$m2_mean)
+
+
+#hom variance
+#pgp
+leveneTest(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$prep)
+leveneTest(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$prep)
+leveneTest(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$prep)
+
+leveneTest(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$sex)
+leveneTest(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$sex)
+leveneTest(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$sex)
+
+
+t.test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$prep)
+t.test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$prep)
+t.test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$prep)
+
+t.test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$sex)
+t.test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$sex)
+t.test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$sex)
+
+pgp_r_lm <- lm(r_mean ~ prep + sex, data = pgp_sumstats_animals)
+plot(pgp_r_lm)
+anova(pgp_r_lm)
+emmeans::emmeans(pgp_r_lm, pairwise ~ prep)$contrasts
+emmeans::emmeans(pgp_r_lm, pairwise ~ sex)$contrasts
+
+pgp_r_lm <- lme4::lmer(r_mean ~ prep + sex + (1|mouseID), data = pgp_sumstats_animals)
+
+
+coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
+
+coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m1_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+
+```
+
+```{r}
+#normality
+car::qqPlot(bcrp_sumstats_animals$r_mean)
+shapiro.test(bcrp_sumstats_animals$r_mean)
+
+car::qqPlot(bcrp_sumstats_animals$m1_mean)
+shapiro.test(bcrp_sumstats_animals$m1_mean)
+
+car::qqPlot(bcrp_sumstats_animals$m2_mean)
+shapiro.test(bcrp_sumstats_animals$m2_mean)
+
+#hom variance
+leveneTest(bcrp_sumstats_animals$r_mean ~ bcrp_sumstats_animals$sex)
+leveneTest(bcrp_sumstats_animals$m1_mean ~ bcrp_sumstats_animals$sex)
+leveneTest(bcrp_sumstats_animals$m2_mean ~ bcrp_sumstats_animals$sex)
+
+
+t.test(bcrp_sumstats_animals$r_mean ~ bcrp_sumstats_animals$sex)
+t.test(bcrp_sumstats_animals$m1_mean ~ bcrp_sumstats_animals$sex)
+t.test(bcrp_sumstats_animals$m2_mean ~ bcrp_sumstats_animals$sex)
+
+coin::wilcox_test(bcrp_sumstats_animals$r_mean ~ bcrp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(bcrp_sumstats_animals$m1_mean ~ bcrp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(bcrp_sumstats_animals$m2_mean ~ bcrp_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+```
+
+
+```{r}
+#checking normality of differences for paired t test
+mrp_r_diffs <- with(mrp2_sumstats_animals, 
+        r_mean[coloc == "TRUE"] - r_mean[coloc == "FALSE"])
+car::qqPlot(mrp_r_diffs)
+shapiro.test(mrp_r_diffs)
+
+rstatix::identify_outliers(mrp_r_diffs)
+
+#veeery close
+mrp_m1_diffs <- with(mrp2_sumstats_animals, 
+        m1_mean[coloc == "TRUE"] - m1_mean[coloc == "FALSE"])
+car::qqPlot(mrp_m1_diffs)
+shapiro.test(mrp_m1_diffs)
+
+mrp_m2_diffs <- with(mrp2_sumstats_animals, 
+        m2_mean[coloc == "TRUE"] - m2_mean[coloc == "FALSE"])
+car::qqPlot(mrp_m2_diffs)
+shapiro.test(mrp_m2_diffs)
+
+mrp2_sumstats_animals$r_mean <- replace_na(mrp2_sumstats_animals$r_mean, 0)
+mrp2_sumstats_animals$m1_mean <- replace_na(mrp2_sumstats_animals$m1_mean, 0)
+mrp2_sumstats_animals$m2_mean <- replace_na(mrp2_sumstats_animals$m2_mean, 0)
+
+t.test(mrp2_sumstats_animals$r_mean ~ mrp2_sumstats_animals$coloc, paired = TRUE)
+t.test(mrp2_sumstats_animals$m1_mean ~ mrp2_sumstats_animals$coloc, paired = TRUE)
+t.test(mrp2_sumstats_animals$m2_mean ~ mrp2_sumstats_animals$coloc, paired = TRUE)
+
+
+mrp2_sumstats_animals$coloc <- as.factor(mrp2_sumstats_animals$coloc)
+
+coin::wilcoxsign_test(r_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
+coin::wilcoxsign_test(m1_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
+coin::wilcoxsign_test(m2_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
+
+#check assumptions for t test!
+mrp2_pos_sumstats_animals <- mrp2_sumstats_animals %>% filter(coloc== TRUE)
+
+coin::wilcox_test(mrp2_pos_sumstats_animals$r_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_pos_sumstats_animals$m1_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(mrp2_pos_sumstats_animals$m2_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
 ```
