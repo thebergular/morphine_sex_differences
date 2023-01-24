@@ -48,21 +48,21 @@
 <polyline points='117.93,136.03 128.48,136.03 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='123.21,136.03 123.21,141.20 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='117.93,141.20 128.48,141.20 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<circle cx='73.42' cy='160.52' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='118.43' cy='140.43' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='69.21' cy='153.23' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='118.76' cy='146.43' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='70.21,155.86 72.84,160.42 67.58,160.42 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='68.65,150.79 71.28,155.35 66.02,155.35 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='121.31,137.33 123.95,141.89 118.68,141.89 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='72.56,153.24 75.19,157.80 69.92,157.80 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='118.31,144.23 120.94,148.79 115.67,148.79 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='70.57,147.97 73.20,152.53 67.94,152.53 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='124.43,128.26 127.06,132.82 121.79,132.82 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='65.53,155.70 68.17,160.26 62.90,160.26 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='119.02,130.71 121.65,135.27 116.39,135.27 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='68.95' cy='154.68' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='123.66' cy='130.74' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='67.52' cy='160.53' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='120.55' cy='140.46' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='67.65' cy='153.26' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='125.30' cy='146.39' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='70.75,155.81 73.38,160.37 68.11,160.37 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='74.97,150.77 77.60,155.33 72.34,155.33 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='118.15,137.42 120.79,141.98 115.52,141.98 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='65.65,153.26 68.28,157.82 63.01,157.82 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='124.51,144.18 127.14,148.74 121.87,148.74 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='68.67,147.96 71.31,152.52 66.04,152.52 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='127.33,128.26 129.96,132.82 124.70,132.82 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='66.86,155.70 69.49,160.26 64.22,160.26 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='119.16,130.73 121.79,135.29 116.52,135.29 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='69.70' cy='154.66' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='125.09' cy='130.75' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
 <polyline points='70.45,160.57 123.21,140.43 ' style='stroke-width: 1.07; stroke: #440154; stroke-linecap: butt;' />
 <polyline points='70.45,153.27 123.21,146.38 ' style='stroke-width: 1.07; stroke: #46337E; stroke-linecap: butt;' />
 <polyline points='70.45,153.82 123.21,140.43 ' style='stroke-width: 1.07; stroke: #277F8E; stroke-linecap: butt;' />
