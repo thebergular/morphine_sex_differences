@@ -372,7 +372,7 @@ pgp_animal_r_plot <- pgp_sumstats_animals %>%
   ggplot(aes(x=prep, y=r_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.1) +  
+                 geom = "errorbar", width=0.2) +  
   geom_jitter(color="black", width=0.1, aes(shape=sex)) +
   theme_bw(12) +
   guides(shape=guide_legend("Sex")) +
@@ -386,7 +386,7 @@ ggsave("../figures/pgp_r_plot.svg", plot=pgp_animal_r_plot, width=3, height=3)
 pgp_animal_m_plot <- ggplot(pgp_coloc2_long, aes(x=prep, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.1) + 
+                 geom = "errorbar", width=0.2) + 
   geom_jitter(color="black", width=0.1, aes(shape=sex)) +
   facet_wrap(~m_stat_type) +
   theme_bw(12) +
@@ -418,7 +418,7 @@ bcrp_animal_r_plot <- bcrp_sumstats_animals %>%
   ggplot(aes(x=sex, y=r_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.1) +  
+                 geom = "errorbar", width=0.2) +  
   geom_jitter(color="black", width=0.1, aes(shape=sex)) +
   theme_bw(12)  +
   guides(shape=guide_legend("Sex")) +
@@ -432,7 +432,7 @@ ggsave("../figures/bcrp_r_plot.svg", plot=bcrp_animal_r_plot, width=3, height=3)
 bcrp_animal_m_plot <- ggplot(bcrp_coloc2_long, aes(x=sex, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.1) + 
+                 geom = "errorbar", width=0.2) + 
   geom_jitter(color="black", width=0.1, aes(shape=sex)) +
   facet_wrap(~m_stat_type) +
   theme_bw(12)  +
@@ -467,7 +467,7 @@ mrp2_animal_r_plot <- mrp2_sumstats_animals %>%
   ggplot(aes(x=coloc, y=r_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.1) + 
+                 geom = "errorbar", width=0.2) + 
   geom_jitter(color="black", width=0.1, aes(shape=sex)) +
   geom_line(aes(group=mouseID, color=mouseID)) +
   scale_color_viridis(discrete="TRUE") +
@@ -483,7 +483,7 @@ ggsave("../figures/mrp2_r_plot.svg", plot=mrp2_animal_r_plot, width=3, height=3)
 mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long, aes(x=coloc, y=m_stat_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.1) + 
+                 geom = "errorbar", width=0.2) + 
   geom_jitter(color="black", width=0.1, aes(shape=sex)) +
   geom_line(aes(group=mouseID, color=mouseID)) +
   facet_wrap(~m_stat_type) +
@@ -496,6 +496,7 @@ mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long, aes(x=coloc, y=m_stat_m
 mrp2_animal_m_plot
 ggsave("../figures/mrp2_m_plot.png", plot=mrp2_animal_m_plot, width=5, height=3)
 ggsave("../figures/mrp2_m_plot.svg", plot=mrp2_animal_m_plot, width=5, height=3)
+
 ```
 
 
@@ -543,7 +544,7 @@ anova(pgp_r_lm)
 emmeans::emmeans(pgp_r_lm, pairwise ~ prep)$contrasts
 emmeans::emmeans(pgp_r_lm, pairwise ~ sex)$contrasts
 
-pgp_r_lm <- lme4::lmer(r_mean ~ prep + sex + (1|mouseID), data = pgp_sumstats_animals)
+#pgp_r_lm <- lme4::lmer(r_mean ~ prep + sex + (1|mouseID), data = pgp_sumstats_animals)
 
 
 coin::wilcox_test(pgp_sumstats_animals$r_mean ~ pgp_sumstats_animals$prep, conf.int=TRUE, distribution="exact")
@@ -584,24 +585,29 @@ coin::wilcox_test(bcrp_sumstats_animals$m2_mean ~ bcrp_sumstats_animals$sex, con
 
 
 ```{r}
+colnames(mrp2_sumstats_animals_wide)
+```
+```{r}
 #checking normality of differences for paired t test
-mrp_r_diffs <- with(mrp2_sumstats_animals, 
-        r_mean[coloc == "TRUE"] - r_mean[coloc == "FALSE"])
-car::qqPlot(mrp_r_diffs)
-shapiro.test(mrp_r_diffs)
 
-rstatix::identify_outliers(mrp_r_diffs)
+mrp2_sumstats_animals_wide <- mrp2_sumstats_animals_wide %>%
+  mutate(r_diffs = r_mean_TRUE - r_mean_FALSE,
+         m1_diffs = m1_mean_TRUE - m1_mean_FALSE,
+         m2_diffs = m2_mean_TRUE - m2_mean_FALSE)
 
-#veeery close
-mrp_m1_diffs <- with(mrp2_sumstats_animals, 
-        m1_mean[coloc == "TRUE"] - m1_mean[coloc == "FALSE"])
-car::qqPlot(mrp_m1_diffs)
-shapiro.test(mrp_m1_diffs)
 
-mrp_m2_diffs <- with(mrp2_sumstats_animals, 
-        m2_mean[coloc == "TRUE"] - m2_mean[coloc == "FALSE"])
-car::qqPlot(mrp_m2_diffs)
-shapiro.test(mrp_m2_diffs)
+car::qqPlot(mrp2_sumstats_animals_wide$r_diffs)
+shapiro.test(mrp2_sumstats_animals_wide$r_diffs)
+mrp2_sumstats_animals_wide %>% rstatix::identify_outliers(r_diffs)
+
+car::qqPlot(mrp2_sumstats_animals_wide$m1_diffs)
+shapiro.test(mrp2_sumstats_animals_wide$m1_diffs)
+mrp2_sumstats_animals_wide %>% rstatix::identify_outliers(m1_diffs)
+
+car::qqPlot(mrp2_sumstats_animals_wide$m2_diffs)
+shapiro.test(mrp2_sumstats_animals_wide$m2_diffs)
+mrp2_sumstats_animals_wide %>% rstatix::identify_outliers(m2_diffs)
+
 
 mrp2_sumstats_animals$r_mean <- replace_na(mrp2_sumstats_animals$r_mean, 0)
 mrp2_sumstats_animals$m1_mean <- replace_na(mrp2_sumstats_animals$m1_mean, 0)
@@ -618,10 +624,23 @@ coin::wilcoxsign_test(r_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf
 coin::wilcoxsign_test(m1_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
 coin::wilcoxsign_test(m2_mean ~ coloc | mouseID, data=mrp2_sumstats_animals, conf.int=TRUE, distribution="exact")
 
-#check assumptions for t test!
+
 mrp2_pos_sumstats_animals <- mrp2_sumstats_animals %>% filter(coloc== TRUE)
 
 coin::wilcox_test(mrp2_pos_sumstats_animals$r_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+t.test(mrp2_sumstats_animals_wide$r_mean_TRUE ~ mrp2_sumstats_animals_wide$sex)
 coin::wilcox_test(mrp2_pos_sumstats_animals$m1_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
 coin::wilcox_test(mrp2_pos_sumstats_animals$m2_mean ~ mrp2_pos_sumstats_animals$sex, conf.int=TRUE, distribution="exact")
+
+
+
+mrp2_sumstats_animals_long
+mrp2_sumstats_animals_wide
+```
+
+```{r}
+intersect(pgp_sumstats_animals$mouseID,bcrp_sumstats_animals$mouseID)
+intersect(pgp_sumstats_animals$mouseID,mrp2_sumstats_animals$mouseID)
+intersect(bcrp_sumstats_animals$mouseID,mrp2_sumstats_animals$mouseID)
+intersect(intersect(pgp_sumstats_animals$mouseID,bcrp_sumstats_animals$mouseID),mrp2_sumstats_animals$mouseID)
 ```

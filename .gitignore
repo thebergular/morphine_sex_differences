@@ -2,3 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
+data/IHC/coloc2_results_bcrp
+data/IHC/coloc2_results_pgp
+data/IHC/coloc2_results_mrp2
