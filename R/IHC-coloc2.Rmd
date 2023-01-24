@@ -51,11 +51,9 @@ M2 = P-gp/Bcrp/Mrp2 overlapping occludin
 #pgp_coloc2 <- pgp_coloc2 %>% na.omit(pgp_coloc2) %>%
 #  mutate(sex = as.factor(str_sub(sample, start=1L, end=1L)),
 #        mouseID = as.factor(str_extract(sample, "(?<=-)[:digit:]+")),
-        #prep = as.factor(str_extract(sample, "[:lower:]{2,}")),
+       #prep = as.factor(str_extract(sample, "[:lower:]{2,}")),
 #        prep = as.factor(str_extract(sample, "wm|section")),
 #        image = str_extract(sample, "[:alpha:]{2,}.*"), .before=m1)
-
-#pgp_coloc2$prep
 
 #pgp_coloc2 <- pgp_coloc2 %>% select(-sample) %>%
 #  mutate(m1 = as.double(m1),
@@ -203,7 +201,7 @@ pgp_sumstats <- pgp_coloc2 %>% summarise(m1_mean = mean(m1),
                      n_total = n(),
                      n_coloc = sum(coloc)
                      )
-pgp_sumstats
+
 
 bcrp_sumstats <- bcrp_coloc2 %>% summarise(m1_mean = mean(m1),
                      m1_sd = sd(m1),
@@ -215,7 +213,7 @@ bcrp_sumstats <- bcrp_coloc2 %>% summarise(m1_mean = mean(m1),
                      n_coloc = sum(coloc),
                      mean_P = mean(Pval)
                      )
-bcrp_sumstats
+
 
 mrp2_sumstats <- mrp2_coloc2 %>% summarise(m1_mean = mean(m1),
                      m1_sd = sd(m1),
@@ -226,7 +224,7 @@ mrp2_sumstats <- mrp2_coloc2 %>% summarise(m1_mean = mean(m1),
                      n_total = n(),
                      n_coloc = sum(coloc)
                      )
-mrp2_sumstats
+
 
 mrp2_sumstats_image <- mrp2_coloc2 %>% group_by(image,mouseID,sex,coloc) %>% 
   summarise(m1_mean = mean(m1),
@@ -238,7 +236,7 @@ mrp2_sumstats_image <- mrp2_coloc2 %>% group_by(image,mouseID,sex,coloc) %>%
              n_total = n(),
              n_coloc = sum(coloc)
              )
-mrp2_sumstats_image
+
 
 pgp_sumstats_animals <- pgp_coloc2 %>% group_by(mouseID,sex,prep) %>% 
   summarise(m1_mean = mean(m1),
@@ -367,9 +365,9 @@ coin::wilcox_test(pgp_wm_sumstats$m2_mean ~ pgp_wm_sumstats$sex, conf.int=TRUE, 
 
 pgp_sect_sumstats <- pgp_sumstats_animals %>% filter(prep == "section")
 
-#coin::wilcox_test(pgp_sect_sumstats$r_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
-#coin::wilcox_test(pgp_sect_sumstats$m1_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
-#coin::wilcox_test(pgp_sect_sumstats$m2_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sect_sumstats$r_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sect_sumstats$m1_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
+coin::wilcox_test(pgp_sect_sumstats$m2_mean ~ pgp_sect_sumstats$sex, conf.int=TRUE, distribution="exact")
 ```
 
 ```{r}
@@ -428,8 +426,8 @@ pgp_animal_r_plot <- pgp_sumstats_animals %>%
   ggtitle("P-gp")
 
 pgp_animal_r_plot
-#ggsave("../figures/pgp_r_plot.png", plot=pgp_animal_r_plot, width=3, height=3)
-
+ggsave("../figures/pgp_r_plot.png", plot=pgp_animal_r_plot, width=3, height=3)
+ggsave("../figures/pgp_r_plot.svg", plot=pgp_animal_r_plot, width=3, height=3)
 
 pgp_animal_m_plot <- ggplot(pgp_coloc2_long, aes(x=prep, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -443,7 +441,8 @@ pgp_animal_m_plot <- ggplot(pgp_coloc2_long, aes(x=prep, y=m_mean)) +
   ggtitle("P-gp")
 
 pgp_animal_m_plot
-#ggsave("../figures/pgp_m_plot.png", plot=pgp_animal_m_plot, width=5, height=3)
+ggsave("../figures/pgp_m_plot.png", plot=pgp_animal_m_plot, width=5, height=3)
+ggsave("../figures/pgp_m_plot.svg", plot=pgp_animal_m_plot, width=5, height=3)
 ```
 
 ```{r}
@@ -473,8 +472,8 @@ bcrp_animal_r_plot <- bcrp_sumstats_animals %>%
   ggtitle("Bcrp")
 
 bcrp_animal_r_plot
-#ggsave("../figures/bcrp_r_plot.png", plot=bcrp_animal_r_plot, width=3, height=3)
-
+ggsave("../figures/bcrp_r_plot.png", plot=bcrp_animal_r_plot, width=3, height=3)
+ggsave("../figures/bcrp_r_plot.svg", plot=bcrp_animal_r_plot, width=3, height=3)
 
 bcrp_animal_m_plot <- ggplot(bcrp_coloc2_long, aes(x=sex, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -488,8 +487,8 @@ bcrp_animal_m_plot <- ggplot(bcrp_coloc2_long, aes(x=sex, y=m_mean)) +
   ggtitle("Bcrp")
 
 bcrp_animal_m_plot
-#ggsave("../figures/bcrp_m_plot.png", plot=bcrp_animal_m_plot, width=5, height=3)
-
+ggsave("../figures/bcrp_m_plot.png", plot=bcrp_animal_m_plot, width=5, height=3)
+ggsave("../figures/bcrp_m_plot.svg", plot=bcrp_animal_m_plot, width=5, height=3)
 ```
 
 
@@ -524,8 +523,8 @@ mrp2_animal_r_plot <- mrp2_sumstats_animals %>%
   ggtitle("Mrp2")
 
 mrp2_animal_r_plot
-#ggsave("../figures/mrp2_r_plot.png", plot=mrp2_animal_r_plot, width=3, height=3)
-
+ggsave("../figures/mrp2_r_plot.png", plot=mrp2_animal_r_plot, width=3, height=3)
+ggsave("../figures/mrp2_r_plot.svg", plot=mrp2_animal_r_plot, width=3, height=3)
 
 mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long, aes(x=coloc, y=m_stat_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -541,6 +540,6 @@ mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long, aes(x=coloc, y=m_stat_m
   ggtitle("Mrp2")
 
 mrp2_animal_m_plot
-##ggsave("../figures/mrp2_m_plot.png", plot=mrp2_animal_m_plot, width=5, height=3)
-
+ggsave("../figures/mrp2_m_plot.png", plot=mrp2_animal_m_plot, width=5, height=3)
+ggsave("../figures/mrp2_m_plot.svg", plot=mrp2_animal_m_plot, width=5, height=3)
 ```

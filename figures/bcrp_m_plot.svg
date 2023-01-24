@@ -48,13 +48,13 @@
 <polyline points='131.76,65.80 137.41,65.80 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='134.59,65.80 134.59,73.90 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='131.76,73.90 137.41,73.90 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<circle cx='81.65' cy='81.97' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='72.81' cy='66.59' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='129.43,63.52 132.07,68.08 126.80,68.08 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='135.42,78.19 138.05,82.75 132.79,82.75 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='129.07,66.22 131.70,70.78 126.44,70.78 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='134.29,59.35 136.92,63.91 131.65,63.91 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='76.75' cy='72.19' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='73.36' cy='82.00' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='77.73' cy='66.60' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='133.60,63.51 136.23,68.07 130.97,68.07 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='129.42,78.18 132.06,82.74 126.79,82.74 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='133.90,66.22 136.53,70.78 131.27,70.78 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='138.06,59.35 140.70,63.91 135.43,63.91 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='83.41' cy='72.17' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
 <rect x='44.13' y='43.73' width='124.38' height='137.92' style='stroke-width: 1.16; stroke: #333333;' />
 </g>
 <g clip-path='url(#cpMC4wMHwzNjAuMDB8MC4wMHwyMTYuMDA=)'>
@@ -84,13 +84,13 @@
 <polyline points='262.11,132.92 267.77,132.92 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='264.94,132.92 264.94,140.16 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
 <polyline points='262.11,140.16 267.77,140.16 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<circle cx='210.21' cy='117.95' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='206.86' cy='132.63' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='265.42,144.29 268.05,148.85 262.79,148.85 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='263.69,129.31 266.33,133.87 261.06,133.87 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='266.06,129.43 268.69,133.99 263.43,133.99 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='261.28,130.97 263.91,135.53 258.64,135.53 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='208.68' cy='138.93' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='211.23' cy='117.96' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='211.82' cy='132.63' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='261.23,144.29 263.86,148.85 258.59,148.85 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='266.12,129.31 268.75,133.87 263.48,133.87 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='263.42,129.44 266.05,134.00 260.78,134.00 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='266.32,130.98 268.95,135.54 263.68,135.54 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='210.60' cy='138.95' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
 <rect x='174.49' y='43.73' width='124.38' height='137.92' style='stroke-width: 1.16; stroke: #333333;' />
 </g>
 <g clip-path='url(#cpMC4wMHwzNjAuMDB8MC4wMHwyMTYuMDA=)'>
