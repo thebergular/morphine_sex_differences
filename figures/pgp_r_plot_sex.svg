@@ -40,23 +40,23 @@
 <polyline points='70.45,181.65 70.45,25.28 ' style='stroke-width: 1.16; stroke: #EBEBEB; stroke-linecap: butt;' />
 <polyline points='123.21,181.65 123.21,25.28 ' style='stroke-width: 1.16; stroke: #EBEBEB; stroke-linecap: butt;' />
 <rect x='51.99' y='78.42' width='36.93' height='85.97' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #595959;' />
-<rect x='104.74' y='116.55' width='36.93' height='47.84' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #595959;' />
-<polyline points='65.18,66.75 75.73,66.75 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='70.45,66.75 70.45,90.09 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='65.18,90.09 75.73,90.09 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='117.93,107.35 128.48,107.35 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='123.21,107.35 123.21,125.75 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polyline points='117.93,125.75 128.48,125.75 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
-<polygon points='119.53,135.48 122.16,140.04 116.90,140.04 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='119.24,131.84 121.87,136.40 116.61,136.40 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='69.75' cy='43.50' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='120.97' cy='88.11' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='72.33,86.35 74.96,90.91 69.70,90.91 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='74.75,84.97 77.38,89.53 72.12,89.53 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='65.30,90.01 67.94,94.57 62.67,94.57 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='119.25,94.71 121.89,99.27 116.62,99.27 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<circle cx='124.65' cy='103.54' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
-<polygon points='124.32,133.35 126.95,137.91 121.69,137.91 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<rect x='104.74' y='111.10' width='36.93' height='53.29' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #595959;' />
+<polyline points='65.18,60.44 75.73,60.44 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='70.45,60.44 70.45,96.40 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='65.18,96.40 75.73,96.40 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='117.93,102.00 128.48,102.00 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='123.21,102.00 123.21,120.20 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polyline points='117.93,120.20 128.48,120.20 ' style='stroke-width: 1.07; stroke-linecap: butt;' />
+<polygon points='124.13,135.25 126.76,139.81 121.50,139.81 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='120.34,131.78 122.97,136.34 117.70,136.34 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='69.13' cy='43.62' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='68.89' cy='88.29' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='120.71,86.11 123.34,90.67 118.08,90.67 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='125.81,84.89 128.44,89.45 123.18,89.45 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='119.90,89.99 122.53,94.55 117.27,94.55 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='120.25,94.80 122.88,99.36 117.61,99.36 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<circle cx='71.90' cy='103.53' r='1.95' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
+<polygon points='122.75,133.50 125.38,138.06 120.12,138.06 ' style='stroke-width: 0.71; stroke: none; fill: #000000;' />
 <rect x='38.80' y='25.28' width='116.07' height='156.37' style='stroke-width: 1.16; stroke: #333333;' />
 </g>
 <g clip-path='url(#cpMC4wMHwyMTYuMDB8MC4wMHwyMTYuMDA=)'>
@@ -70,9 +70,9 @@
 <polyline points='35.81,42.54 38.80,42.54 ' style='stroke-width: 1.16; stroke: #333333; stroke-linecap: butt;' />
 <polyline points='70.45,184.64 70.45,181.65 ' style='stroke-width: 1.16; stroke: #333333; stroke-linecap: butt;' />
 <polyline points='123.21,184.64 123.21,181.65 ' style='stroke-width: 1.16; stroke: #333333; stroke-linecap: butt;' />
-<text x='70.45' y='193.90' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='30.39px' lengthAdjust='spacingAndGlyphs'>section</text>
-<text x='123.21' y='193.90' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='14.92px' lengthAdjust='spacingAndGlyphs'>wm</text>
-<text x='96.83' y='207.50' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='24.02px' lengthAdjust='spacingAndGlyphs'>prep</text>
+<text x='70.45' y='193.90' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='5.86px' lengthAdjust='spacingAndGlyphs'>F</text>
+<text x='123.21' y='193.90' text-anchor='middle' style='font-size: 9.60px;fill: #4D4D4D; font-family: "Arial";' textLength='7.99px' lengthAdjust='spacingAndGlyphs'>M</text>
+<text x='96.83' y='207.50' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='18.68px' lengthAdjust='spacingAndGlyphs'>sex</text>
 <text transform='translate(14.57,103.47) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: "Arial";' textLength='40.69px' lengthAdjust='spacingAndGlyphs'>r_mean</text>
 <rect x='166.82' y='71.66' width='43.20' height='63.61' style='stroke-width: 1.16; stroke: none; fill: #FFFFFF;' />
 <text x='172.80' y='87.50' style='font-size: 12.00px; font-family: "Arial";' textLength='20.69px' lengthAdjust='spacingAndGlyphs'>Sex</text>
