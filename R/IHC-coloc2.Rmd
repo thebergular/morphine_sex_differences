@@ -380,8 +380,8 @@ pgp_animal_r_plot <- pgp_sumstats_animals %>%
   ggtitle("P-gp")
 
 pgp_animal_r_plot
-ggsave("../figures/pgp_r_plot.png", plot=pgp_animal_r_plot, width=3, height=3)
-ggsave("../figures/pgp_r_plot.svg", plot=pgp_animal_r_plot, width=3, height=3)
+#ggsave("../figures/pgp_r_plot.png", plot=pgp_animal_r_plot, width=3, height=3)
+#ggsave("../figures/pgp_r_plot.svg", plot=pgp_animal_r_plot, width=3, height=3)
 
 pgp_animal_m_plot <- ggplot(pgp_coloc2_long, aes(x=prep, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -395,8 +395,8 @@ pgp_animal_m_plot <- ggplot(pgp_coloc2_long, aes(x=prep, y=m_mean)) +
   ggtitle("P-gp")
 
 pgp_animal_m_plot
-ggsave("../figures/pgp_m_plot.png", plot=pgp_animal_m_plot, width=5, height=3)
-ggsave("../figures/pgp_m_plot.svg", plot=pgp_animal_m_plot, width=5, height=3)
+#ggsave("../figures/pgp_m_plot.png", plot=pgp_animal_m_plot, width=5, height=3)
+#ggsave("../figures/pgp_m_plot.svg", plot=pgp_animal_m_plot, width=5, height=3)
 
 #males v females
 pgp_r_plot_sex <- pgp_sumstats_animals %>% 
@@ -411,8 +411,8 @@ pgp_r_plot_sex <- pgp_sumstats_animals %>%
   ggtitle("P-gp")
 
 pgp_r_plot_sex
-ggsave("../figures/pgp_r_plot_sex.png", plot=pgp_r_plot_sex, width=3, height=3)
-ggsave("../figures/pgp_r_plot_sex.svg", plot=pgp_r_plot_sex, width=3, height=3)
+#ggsave("../figures/pgp_r_plot_sex.png", plot=pgp_r_plot_sex, width=3, height=3)
+#ggsave("../figures/pgp_r_plot_sex.svg", plot=pgp_r_plot_sex, width=3, height=3)
 
 pgp_m_plot_sex <- ggplot(pgp_coloc2_long, aes(x=sex, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -426,8 +426,8 @@ pgp_m_plot_sex <- ggplot(pgp_coloc2_long, aes(x=sex, y=m_mean)) +
   ggtitle("P-gp")
 
 pgp_m_plot_sex
-ggsave("../figures/pgp_m_plot_sex.png", plot=pgp_m_plot_sex, width=5, height=3)
-ggsave("../figures/pgp_m_plot_sex.svg", plot=pgp_m_plot_sex, width=5, height=3)
+#ggsave("../figures/pgp_m_plot_sex.png", plot=pgp_m_plot_sex, width=5, height=3)
+#ggsave("../figures/pgp_m_plot_sex.svg", plot=pgp_m_plot_sex, width=5, height=3)
 ```
 
 ```{r}
@@ -457,8 +457,8 @@ bcrp_animal_r_plot <- bcrp_sumstats_animals %>%
   ggtitle("Bcrp")
 
 bcrp_animal_r_plot
-ggsave("../figures/bcrp_r_plot.png", plot=bcrp_animal_r_plot, width=3, height=3)
-ggsave("../figures/bcrp_r_plot.svg", plot=bcrp_animal_r_plot, width=3, height=3)
+#ggsave("../figures/bcrp_r_plot.png", plot=bcrp_animal_r_plot, width=3, height=3)
+#ggsave("../figures/bcrp_r_plot.svg", plot=bcrp_animal_r_plot, width=3, height=3)
 
 bcrp_animal_m_plot <- ggplot(bcrp_coloc2_long, aes(x=sex, y=m_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -472,8 +472,8 @@ bcrp_animal_m_plot <- ggplot(bcrp_coloc2_long, aes(x=sex, y=m_mean)) +
   ggtitle("Bcrp")
 
 bcrp_animal_m_plot
-ggsave("../figures/bcrp_m_plot.png", plot=bcrp_animal_m_plot, width=5, height=3)
-ggsave("../figures/bcrp_m_plot.svg", plot=bcrp_animal_m_plot, width=5, height=3)
+#ggsave("../figures/bcrp_m_plot.png", plot=bcrp_animal_m_plot, width=5, height=3)
+#ggsave("../figures/bcrp_m_plot.svg", plot=bcrp_animal_m_plot, width=5, height=3)
 ```
 
 
@@ -492,15 +492,19 @@ mrp2_coloc2_long <- mrp2_coloc2_long %>% group_by(mouseID, coloc, m_stat_type, s
              n_coloc = sum(coloc))
 
 mrp2_sumstats_animals_long <- mrp2_sumstats_animals %>% pivot_longer(cols = c(m1_mean,m2_mean), names_to = "m_stat_type", values_to = "m_stat_mean") %>% group_by(mouseID)
+mrp2_sumstats_animals_long_sorted <- mrp2_sumstats_animals_long %>% arrange(coloc, mouseID)
+mrp2_sumstats_animals_sorted <- mrp2_sumstats_animals %>% arrange(coloc, mouseID)
 
 #per animal
-mrp2_animal_r_plot <- mrp2_sumstats_animals %>% 
+mrp2_animal_r_plot <- mrp2_sumstats_animals_sorted %>% 
   ggplot(aes(x=coloc, y=r_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
                  geom = "errorbar", width=0.2) + 
-  geom_jitter(color="black", width=0.1, aes(shape=sex)) +
-  geom_line(aes(group=mouseID, color=mouseID)) +
+  geom_line(position=position_jitter(width=0.1, seed=47),
+            aes(group=mouseID, color=mouseID)) +
+  geom_point(position=position_jitter(width=0.1, seed=47),
+             color="black", width=0.1, aes(shape=sex)) +
   scale_color_viridis(discrete="TRUE") +
   theme_bw(12) +
   guides(shape=guide_legend("Sex"), color = "none") +
@@ -508,25 +512,28 @@ mrp2_animal_r_plot <- mrp2_sumstats_animals %>%
   ggtitle("Mrp2")
 
 mrp2_animal_r_plot
-ggsave("../figures/mrp2_r_plot.png", plot=mrp2_animal_r_plot, width=3, height=3)
-ggsave("../figures/mrp2_r_plot.svg", plot=mrp2_animal_r_plot, width=3, height=3)
+#ggsave("../figures/mrp2_r_plot.png", plot=mrp2_animal_r_plot, width=3, height=3)
+#ggsave("../figures/mrp2_r_plot.svg", plot=mrp2_animal_r_plot, width=3, height=3)
 
-mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long, aes(x=coloc, y=m_stat_mean)) +
+
+mrp2_animal_m_plot <- ggplot(mrp2_sumstats_animals_long_sorted, aes(x=coloc, y=m_stat_mean)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
   stat_summary(fun.data = mean_se,  
-                 geom = "errorbar", width=0.2) + 
-  geom_jitter(color="black", width=0.1, aes(shape=sex)) +
-  geom_line(aes(group=mouseID, color=mouseID)) +
+                 geom = "errorbar", width=0.2) +
+  geom_line(position=position_jitter(width=0.1, seed=47),
+            aes(group=mouseID, color=mouseID)) +
+  geom_point(position=position_jitter(width=0.1, seed=47),
+             color="black", width=0.1, aes(shape=sex)) +
   facet_wrap(~m_stat_type) +
   scale_color_viridis(discrete="TRUE") +
   theme_bw(12) +
   guides(shape=guide_legend("Sex"), color = "none") +
-  ylim(-0.05,0.9) +
+  ylim(-0.05,0.65) +
   ggtitle("Mrp2")
 
 mrp2_animal_m_plot
-ggsave("../figures/mrp2_m_plot.png", plot=mrp2_animal_m_plot, width=5, height=3)
-ggsave("../figures/mrp2_m_plot.svg", plot=mrp2_animal_m_plot, width=5, height=3)
+#ggsave("../figures/mrp2_m_plot.png", plot=mrp2_animal_m_plot, width=5, height=3)
+#ggsave("../figures/mrp2_m_plot.svg", plot=mrp2_animal_m_plot, width=5, height=3)
 
 ```
 
@@ -651,8 +658,8 @@ mrp2_r_plot_sex <- mrp2_sumstats_animals_wide %>%
   ggtitle("Mrp2")
 
 mrp2_r_plot_sex
-ggsave("../figures/mrp2_r_plot_sex.png", plot=mrp2_r_plot_sex, width=3, height=3)
-ggsave("../figures/mrp2_r_plot_sex.svg", plot=mrp2_r_plot_sex, width=3, height=3)
+#ggsave("../figures/mrp2_r_plot_sex.png", plot=mrp2_r_plot_sex, width=3, height=3)
+#ggsave("../figures/mrp2_r_plot_sex.svg", plot=mrp2_r_plot_sex, width=3, height=3)
 
 mrp2_m1_plot_sex <- ggplot(mrp2_sumstats_animals_wide, aes(x=sex, y=m1_mean_TRUE)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -666,8 +673,8 @@ mrp2_m1_plot_sex <- ggplot(mrp2_sumstats_animals_wide, aes(x=sex, y=m1_mean_TRUE
   ggtitle("Mrp2")
 
 mrp2_m1_plot_sex
-ggsave("../figures/mrp2_m1_plot_sex.png", plot=mrp2_m1_plot_sex, width=3, height=3)
-ggsave("../figures/mrp2_m1_plot_sex.svg", plot=mrp2_m1_plot_sex, width=3, height=3)
+#ggsave("../figures/mrp2_m1_plot_sex.png", plot=mrp2_m1_plot_sex, width=3, height=3)
+#ggsave("../figures/mrp2_m1_plot_sex.svg", plot=mrp2_m1_plot_sex, width=3, height=3)
 
 mrp2_m2_plot_sex <- ggplot(mrp2_sumstats_animals_wide, aes(x=sex, y=m2_mean_TRUE)) +
   stat_summary(fun = 'mean', geom="bar", width=0.7) +
@@ -681,8 +688,8 @@ mrp2_m2_plot_sex <- ggplot(mrp2_sumstats_animals_wide, aes(x=sex, y=m2_mean_TRUE
   ggtitle("Mrp2")
 
 mrp2_m2_plot_sex
-ggsave("../figures/mrp2_m2_plot_sex.png", plot=mrp2_m2_plot_sex, width=3, height=3)
-ggsave("../figures/mrp2_m2_plot_sex.svg", plot=mrp2_m2_plot_sex, width=3, height=3)
+#ggsave("../figures/mrp2_m2_plot_sex.png", plot=mrp2_m2_plot_sex, width=3, height=3)
+#ggsave("../figures/mrp2_m2_plot_sex.svg", plot=mrp2_m2_plot_sex, width=3, height=3)
 ```
 
 ```{r}
