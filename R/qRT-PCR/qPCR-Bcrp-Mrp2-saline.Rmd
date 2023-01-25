@@ -35,7 +35,8 @@ bm_data_long <- bm_data_long %>% mutate(gene = fct_recode(as.factor(gene), Bcrp 
 #get some summary statistics
 bm_sumstats <- bm_data_long %>% group_by(gene) %>% summarise(n = n(),
                                                              mean = mean(rge),
-                                                             sd = sd(rge))
+                                                             sd = sd(rge),
+                                                             se = sd/sqrt(n))
 
 bm_sumstats
 
@@ -43,7 +44,7 @@ bm_sumstats
 bm_plot <- ggplot() +
   stat_summary(fun = 'mean', geom="bar", width=0.75, data=bm_data_long, aes(x=gene, y=rge)) +
   #stat_summary(fun.data = mean_se, geom = "errorbar", width=.2) +
-  geom_errorbar(width=0.2, data=bm_sumstats, aes(x=gene, ymin=mean-sd, ymax=mean+sd)) +
+  geom_errorbar(width=0.2, data=bm_sumstats, aes(x=gene, ymin=mean-se, ymax=mean+se)) +
   geom_point(aes(x=gene, y=rge), data=bm_data_long) +
   geom_line(data=bm_data_long, aes(x=gene, y=rge, group=Sample)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.2))) +
@@ -52,8 +53,8 @@ bm_plot <- ggplot() +
 
 bm_plot
 
-ggsave("../../figures/qRT-PCR/bcrp_mrp2_plot.png", plot=bm_plot, height=4, width=4)
-ggsave("../../figures/qRT-PCR/bcrp_mrp2_plot.svg", plot=bm_plot, height=4, width=4)
+#ggsave("../../figures/qRT-PCR/bcrp_mrp2_plot.png", plot=bm_plot, height=4, width=4)
+#ggsave("../../figures/qRT-PCR/bcrp_mrp2_plot.svg", plot=bm_plot, height=4, width=4)
 
 #checking assumptions of t-test
 #normality

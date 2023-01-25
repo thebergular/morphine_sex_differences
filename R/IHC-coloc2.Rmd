@@ -9,11 +9,13 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(openxlsx)
+library(readxl)
 library(coin)
 library(viridis)
 library(ggpubr)
 library(svglite)
 library(car)
+library(rstatix)
 ```
 
 M1 = occludin overlapping P-gp/Bcrp/Mrp2
@@ -68,7 +70,7 @@ M2 = P-gp/Bcrp/Mrp2 overlapping occludin
 #write.xlsx(pgp_coloc2, "../data/IHC/coloc2-pgp-totals.xlsx")
 
 #starting from the processed excel sheet
-pgp_coloc2 <- readxl::read_excel("../data/IHC/coloc2-pgp-totals.xlsx") %>% 
+pgp_coloc2 <- read_excel("../data/IHC/coloc2-pgp-totals.xlsx") %>% 
   mutate(coloc = as.logical(coloc),
          sex = as.factor(sex),
          mouseID = as.factor(mouseID),
@@ -124,7 +126,7 @@ head(pgp_coloc2)
 #write.xlsx(bcrp_coloc2, "../data/IHC/coloc2-bcrp-totals.xlsx")
 
 #starting from processed excel file
-bcrp_coloc2 <- readxl::read_excel("../data/IHC/coloc2-bcrp-totals.xlsx") %>% 
+bcrp_coloc2 <- read_excel("../data/IHC/coloc2-bcrp-totals.xlsx") %>% 
   mutate(coloc = as.logical(coloc),
          sex = as.factor(sex),
          mouseID = as.factor(mouseID),
@@ -179,7 +181,7 @@ head(bcrp_coloc2)
 #write.xlsx(mrp2_coloc2, "../data/IHC/coloc2-mrp2-totals.xlsx")
 
 #starting with processed excel file
-mrp2_coloc2 <- readxl::read_excel("../data/IHC/coloc2-mrp2-totals.xlsx") %>% 
+mrp2_coloc2 <- read_excel("../data/IHC/coloc2-mrp2-totals.xlsx") %>% 
   mutate(coloc = as.logical(coloc),
          sex = as.factor(sex),
          mouseID = as.factor(mouseID))
@@ -547,13 +549,13 @@ were true and false coloc in mrp2 statistically different
 ```{r}
 #normality
 #pgp
-car::qqPlot(pgp_sumstats_animals$r_mean)
+qqPlot(pgp_sumstats_animals$r_mean)
 shapiro.test(pgp_sumstats_animals$r_mean)
 
-car::qqPlot(pgp_sumstats_animals$m1_mean)
+qqPlot(pgp_sumstats_animals$m1_mean)
 shapiro.test(pgp_sumstats_animals$m1_mean)
 
-car::qqPlot(pgp_sumstats_animals$m2_mean)
+qqPlot(pgp_sumstats_animals$m2_mean)
 shapiro.test(pgp_sumstats_animals$m2_mean)
 
 
@@ -579,13 +581,13 @@ t.test(pgp_sumstats_animals$m2_mean ~ pgp_sumstats_animals$sex)
 
 ```{r}
 #normality
-car::qqPlot(bcrp_sumstats_animals$r_mean)
+qqPlot(bcrp_sumstats_animals$r_mean)
 shapiro.test(bcrp_sumstats_animals$r_mean)
 
-car::qqPlot(bcrp_sumstats_animals$m1_mean)
+qqPlot(bcrp_sumstats_animals$m1_mean)
 shapiro.test(bcrp_sumstats_animals$m1_mean)
 
-car::qqPlot(bcrp_sumstats_animals$m2_mean)
+qqPlot(bcrp_sumstats_animals$m2_mean)
 shapiro.test(bcrp_sumstats_animals$m2_mean)
 
 #hom variance
@@ -616,17 +618,17 @@ mrp2_sumstats_animals_wide <- mrp2_sumstats_animals_wide %>%
          m2_diffs = m2_mean_TRUE - m2_mean_FALSE)
 
 
-car::qqPlot(mrp2_sumstats_animals_wide$r_diffs)
+qqPlot(mrp2_sumstats_animals_wide$r_diffs)
 shapiro.test(mrp2_sumstats_animals_wide$r_diffs)
-mrp2_sumstats_animals_wide %>% rstatix::identify_outliers(r_diffs)
+mrp2_sumstats_animals_wide %>% identify_outliers(r_diffs)
 
-car::qqPlot(mrp2_sumstats_animals_wide$m1_diffs)
+qqPlot(mrp2_sumstats_animals_wide$m1_diffs)
 shapiro.test(mrp2_sumstats_animals_wide$m1_diffs)
-mrp2_sumstats_animals_wide %>% rstatix::identify_outliers(m1_diffs)
+mrp2_sumstats_animals_wide %>% identify_outliers(m1_diffs)
 
-car::qqPlot(mrp2_sumstats_animals_wide$m2_diffs)
+qqPlot(mrp2_sumstats_animals_wide$m2_diffs)
 shapiro.test(mrp2_sumstats_animals_wide$m2_diffs)
-mrp2_sumstats_animals_wide %>% rstatix::identify_outliers(m2_diffs)
+mrp2_sumstats_animals_wide %>% identify_outliers(m2_diffs)
 
 
 mrp2_sumstats_animals$r_mean <- replace_na(mrp2_sumstats_animals$r_mean, 0)
