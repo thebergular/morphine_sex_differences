@@ -1,0 +1,359 @@
+---
+title: "FITC-combined-perm-assay"
+author: "CTB"
+date: "2023-03-25"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(svglite)
+library(openxlsx)
+```
+
+```{r}
+csv_list <- list.files(path="D:/Microscopy/IHC images/FITC-perf-analysis/FITC/processing/MAXproj/CSVs", pattern="*.csv", full.names = TRUE)
+csv_cols <- c("Label", "Area", "Mean", "Min", "Max", "%Area")
+fitc_csvs <- as.data.frame(matrix(,0,length(csv_cols)))
+names(fitc_csvs) <- csv_cols
+fitc_csvs
+
+for (i in csv_list) {
+  test <- read_csv(i, show_col_types=FALSE)
+  test <- test %>% select(Label:"%Area")
+  fitc_csvs <- rbind(fitc_csvs, test)
+}
+
+fitc_csvs <- fitc_csvs %>% mutate(
+  mouseID = as.factor(str_extract(Label, "^[:digit:]+")),
+  tissue = as.factor(str_extract(Label, "cap|A[V]?|PVN"))
+)
+
+
+fitc_csvs <- fitc_csvs %>% mutate(
+  tissue = as.factor(case_when(tissue %in% c("A", "AV", "V", "cap") ~ "retina",
+                     tissue == "PVN" ~ "brain")),
+  objLabel = str_extract(Label, "(?<=:).*"),
+  vesselType = as.factor(str_extract(objLabel, "^[:alpha:]")),
+  vesselNum = as.numeric(str_extract(objLabel, "[:digit:]+")),
+  location = str_extract(objLabel, "(?<=-).*"),
+  img = str_extract(Label, ".*(?=_f)")
+) %>% na.omit() %>% select(!Label)
+
+fitc_csvs <- fitc_csvs %>% mutate(
+  vesselType = case_when(vesselType %in% c("A", "AV", "V") ~ "AV",
+                     vesselType == "C" ~ "C"))
+
+#fixing problems when there's, e.g., A1 and V1 both being changed to AV1
+fitc_csvs <- fitc_csvs %>% ungroup() %>%
+  group_by(mouseID, img,vesselType, location) %>%
+  mutate(vesselNum = ifelse(duplicated(vesselNum), vesselNum + 1, vesselNum))
+
+fitc_csvs <- fitc_csvs %>% ungroup() %>% 
+  pivot_wider(id_cols = c(img, mouseID, tissue, vesselType, vesselNum),
+              names_from = location,
+              values_from = c(Area, Mean, Min, Max, "%Area"))
+
+fitc_csvs
+
+```
+
+
+```{r}
+fitc_csvs <- fitc_csvs %>% unnest() %>% 
+  mutate(treatment = as.factor(case_when(mouseID %in% c(29, 62) ~ "untreated",
+                               mouseID %in% c(85, 86) ~ "saline",
+                               mouseID %in% c(83, 84) ~ "morphine")))
+
+fitc_csvs <- fitc_csvs %>%
+  mutate(treatment = fct_relevel(treatment, levels="untreated", "saline", "morphine"))
+
+#write.xlsx(fitc_csvs, "../data/FITC/fitc-perf-summary.xlsx")
+
+fitc_diffs <- fitc_csvs %>% 
+  group_by(img,mouseID, treatment, tissue, vesselType, vesselNum) %>% 
+  mutate(Mean_OI = Mean_outside/Mean_inside,
+         Max_OI = Max_outside/Max_inside) %>%
+  select(img:Area_inside, treatment:Max_OI)
+fitc_diffs
+
+
+fitc_diffs_norm <- fitc_diffs %>% ungroup() %>% 
+  group_by(img, mouseID, treatment, tissue, vesselType) %>%
+  summarize(n= n(),
+            totArea = sum(Area_inside),
+            meanOI = mean(Mean_OI),
+            maxOI = mean(Max_OI),
+            meanOI_norm = meanOI/totArea*100000,
+            maxOI_norm = maxOI/totArea*100000)
+fitc_diffs_norm
+levels(fitc_diffs_norm$vesselType)
+
+
+fitc_diffs_norm_trt <- fitc_diffs_norm %>% group_by(treatment, vesselType) %>%
+  summarize(n= n(),
+            Mean_OI = mean(meanOI),
+            Max_OI = mean(maxOI),
+            Mean_OI_norm = mean(meanOI_norm),
+            Max_OI_norm = mean(maxOI_norm))
+fitc_diffs_norm_trt
+
+levels(fitc_diffs_norm_trt$vesselType)
+```
+
+```{r}
+fitc_diffs_norm %>% group_by(img,mouseID,vesselType) %>% ggplot(aes(x=treatment, y=meanOI)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID))+
+  facet_wrap(tissue~vesselType)
+
+fitc_diffs_norm %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI_norm)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID))+
+  facet_wrap(tissue~vesselType, scales="free_y")
+```
+
+
+```{r}
+#across vessel types
+fitc_diffs_norm2 <- fitc_diffs %>% group_by(treatment, mouseID, tissue) %>%
+  summarize(n= n(),
+            totArea = sum(Area_inside),
+            meanOI = mean(Mean_OI),
+            maxOI = mean(Max_OI),
+            meanOI_norm = meanOI/totArea*100000,
+            maxOI_norm = maxOI/totArea*100000)
+fitc_diffs_norm2
+
+fitc_diffs_norm_trt2 <- fitc_diffs_norm2 %>% group_by(treatment, tissue) %>%
+  summarize(n= n(),
+            Mean_OI = mean(meanOI),
+            Max_OI = mean(maxOI),
+            Mean_OI_norm = mean(meanOI_norm),
+            Max_OI_norm = mean(maxOI_norm))
+fitc_diffs_norm_trt2
+
+
+fitc_diffs_norm2 %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID)) +
+  facet_wrap(~tissue)
+
+fitc_diffs_norm2 %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI_norm)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID)) +
+  facet_wrap(~tissue)
+```
+
+
+
+```{r}
+csv_list_dex <- list.files(path="D:/Microscopy/IHC images/FITC-perf-analysis/FITC-dextran/processing/MAXproj/CSVs", pattern="*.csv", full.names = TRUE)
+csv_cols_dex <- c("Label", "Area", "Mean", "Min", "Max", "%Area")
+fitc_csvs_temp_dex <- as.data.frame(matrix(,0,length(csv_cols_dex)))
+names(fitc_csvs_temp_dex) <- csv_cols_dex
+fitc_csvs_temp_dex
+
+for (i in csv_list_dex) {
+  test <- read_csv(i, show_col_types=FALSE)
+  test <- test %>% select(Label:"%Area")
+  fitc_csvs_temp_dex <- rbind(fitc_csvs_temp_dex, test)
+}
+
+fitc_csvs_dex <- fitc_csvs_temp_dex %>% mutate(
+  mouseID = as.factor(str_extract(Label, "^[:digit:]+")),
+  tissue = as.factor(str_extract(Label, "cap|A[V]?|PVN"))
+)
+
+fitc_csvs_dex <- fitc_csvs_dex %>% mutate(
+  tissue = as.factor(case_when(tissue %in% c("A", "AV", "V", "cap") ~ "retina",
+                     tissue == "PVN" ~ "brain")),
+  objLabel = str_extract(Label, "(?<=:).*"),
+  vesselType = as.factor(str_extract(objLabel, "^[:alpha:]")),
+  vesselNum = as.numeric(str_extract(objLabel, "[:digit:]+")),
+  location = str_extract(objLabel, "(?<=-).*"),
+  img = str_extract(Label, ".*(?=_f)")
+) %>% na.omit() %>% select(!Label)
+
+fitc_csvs_dex <- fitc_csvs_dex %>% mutate(
+  vesselType = case_when(vesselType %in% c("A", "AV", "V") ~ "AV",
+                     vesselType == "C" ~ "C"))
+
+#fixing problems when there's, e.g., A1 and V1 both being changed to AV1
+fitc_csvs_dex <- fitc_csvs_dex %>% ungroup() %>%
+  group_by(mouseID, img,vesselType, location) %>%
+  mutate(vesselNum = ifelse(duplicated(vesselNum), vesselNum + 1, vesselNum))
+
+fitc_csvs_dex <- fitc_csvs_dex %>% ungroup() %>% 
+  pivot_wider(id_cols = c(img, mouseID, tissue, vesselType, vesselNum),
+              names_from = location,
+              values_from = c(Area, Mean, Min, Max, "%Area"))
+
+fitc_csvs_dex
+
+```
+
+
+```{r}
+fitc_csvs_dex <- fitc_csvs_dex %>% unnest() %>% 
+  mutate(treatment = as.factor(case_when(mouseID %in% c(99) ~ "untreated",
+                               mouseID %in% c(2,3) ~ "saline",
+                               mouseID %in% c(5,6) ~ "morphine")))
+
+fitc_csvs_dex <- fitc_csvs_dex %>%
+  mutate(treatment = fct_relevel(treatment, levels="untreated", "saline", "morphine"))
+
+
+write.xlsx(fitc_csvs_dex, "../data/FITC/fitc-dex-perf-summary.xlsx")
+
+
+fitc_diffs_dex <- fitc_csvs_dex %>% 
+  group_by(img,mouseID, treatment, tissue, vesselType, vesselNum) %>% 
+  mutate(Mean_OI = Mean_outside/Mean_inside,
+         Max_OI = Max_outside/Max_inside) %>%
+  select(img:Area_inside, treatment:Max_OI)
+fitc_diffs_dex
+
+
+fitc_diffs_norm_dex <- fitc_diffs_dex %>% ungroup() %>% 
+  group_by(img, mouseID, treatment, tissue, vesselType) %>%
+  summarize(n= n(),
+            totArea = sum(Area_inside),
+            meanOI = mean(Mean_OI),
+            maxOI = mean(Max_OI),
+            meanOI_norm = meanOI/totArea*100000,
+            maxOI_norm = maxOI/totArea*100000)
+fitc_diffs_norm_dex
+
+
+fitc_diffs_norm_trt_dex <- fitc_diffs_norm_dex %>% group_by(treatment, vesselType) %>%
+  summarize(n= n(),
+            Mean_OI = mean(meanOI),
+            Max_OI = mean(maxOI),
+            Mean_OI_norm = mean(meanOI_norm),
+            Max_OI_norm = mean(maxOI_norm))
+fitc_diffs_norm_trt_dex
+```
+
+```{r}
+fitc_diffs_norm_dex %>% group_by(img,mouseID,vesselType) %>% ggplot(aes(x=treatment, y=meanOI)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID))+
+  facet_wrap(tissue~vesselType)
+
+fitc_diffs_norm_dex %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI_norm)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID))+
+  facet_wrap(tissue~vesselType, scales="free_y")
+
+```
+
+
+```{r}
+#across vessel types
+fitc_diffs_norm2_dex <- fitc_diffs_dex %>% group_by(treatment, mouseID, tissue) %>%
+  summarize(n= n(),
+            totArea = sum(Area_inside),
+            meanOI = mean(Mean_OI),
+            maxOI = mean(Max_OI),
+            meanOI_norm = meanOI/totArea*100000,
+            maxOI_norm = maxOI/totArea*100000)
+fitc_diffs_norm2_dex
+
+fitc_diffs_norm_trt2_dex <- fitc_diffs_norm2 %>% group_by(treatment, tissue) %>%
+  summarize(n= n(),
+            Mean_OI = mean(meanOI),
+            Max_OI = mean(maxOI),
+            Mean_OI_norm = mean(meanOI_norm),
+            Max_OI_norm = mean(maxOI_norm))
+fitc_diffs_norm_trt2_dex
+
+
+fitc_diffs_norm2_dex %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID)) +
+  facet_wrap(~tissue)
+
+fitc_diffs_norm2_dex %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI_norm)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=mouseID)) +
+  facet_wrap(~tissue)
+
+```
+
+```{r}
+fitc_diffs_norm2 <- fitc_diffs_norm2 %>% mutate(FITC = as.factor("FITC"))
+fitc_diffs_norm2_dex <- fitc_diffs_norm2_dex %>% mutate(FITC = as.factor("FITC-dextran"))
+
+fitc_diffs_comb <- rbind(fitc_diffs_norm2, fitc_diffs_norm2_dex) %>% ungroup()
+
+
+fitc_comb_plot <- fitc_diffs_comb %>% group_by(mouseID) %>%
+  ggplot(aes(x=treatment, y=meanOI)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=FITC)) +
+  facet_wrap(~tissue) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.25))) +
+  ylab("Leakage Index") +
+  theme_bw() %+replace%
+  theme(legend.title = element_blank())
+fitc_comb_plot
+ggsave(filename="../figures/fitc_comb_plot.png", plot=fitc_comb_plot, height=4, width=6)
+ggsave(filename="../figures/fitc_comb_plot.svg", plot=fitc_comb_plot, height=4, width=6)
+
+
+
+fitc_diffs_comb %>% group_by(mouseID) %>% ggplot(aes(x=treatment, y=meanOI_norm)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=FITC)) +
+  facet_wrap(~tissue)
+```
+
+```{r}
+fitc_anova <- lmer(meanOI ~ tissue * treatment * FITC + (1|mouseID), data=fitc_diffs_comb)
+comb_anova <- lmer(meanOI ~ tissue * treatment + (1|mouseID), data=fitc_diffs_comb)
+anova(fitc_anova, comb_anova)
+
+shapiro.test(fitc_diffs_comb$meanOI)
+
+car::leveneTest(meanOI ~ tissue * treatment, data=fitc_diffs_comb)
+
+plot(comb_anova, type=c("p","smooth"), col.line=1)
+lattice::qqmath(comb_anova)
+
+anova(comb_anova)
+emmeans::emmeans(comb_anova, pairwise ~ treatment | tissue)$contrasts
+emmeans::emmeans(comb_anova, pairwise ~ tissue | treatment)$contrasts
+```
+
+```{r}
+#plot only saline/morphine data
+fitc_comb_trtd <- fitc_diffs_comb %>% filter(treatment != "untreated")
+fitc_comb_trtd_plot <- fitc_comb_trtd %>% group_by(mouseID) %>%
+  ggplot(aes(x=treatment, y=meanOI)) +
+  stat_summary(fun = 'mean', geom="bar") +
+  stat_summary(fun.data = mean_se, geom = "errorbar", width=.1) +
+  geom_point(aes(col=FITC)) +
+  facet_wrap(~tissue) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.25))) +
+  ylab("Leakage Index") +
+  theme_bw() %+replace%
+  theme(legend.title = element_blank())
+fitc_comb_trtd_plot
+ggsave(filename="../figures/fitc_comb_trtd_plot.png", plot=fitc_comb_trtd_plot, height=4, width=5)
+ggsave(filename="../figures/fitc_comb_trtd_plot.svg", plot=fitc_comb_trtd_plot, height=4, width=5)
+```
+
