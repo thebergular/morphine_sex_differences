@@ -1,0 +1,102 @@
+---
+title: "strain comparison"
+author: "nbergum"
+date: "2023-05-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(car)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(ggthemes)
+library(lme4)
+library(EnvStats)
+```
+
+Data visualization for retina and serum on first day of morphine injections
+```{r}
+retina_pk_g <- read.csv("C:\\Users\\nikbe\\Documents\\Vigh Lab\\morphine_sex_differences\\genotype_comp_retina.csv", fileEncoding = 'UTF-8-BOM')
+pk_retina <- retina_pk_g %>% 
+  group_by(animal, ZT, genotype, sex, tissue) %>% 
+  dplyr::summarise(raw_conc = mean(raw_conc), tissue_weight = mean(tissue_weight),
+                   body_wt= mean(body_wt), dose= mean(dose))
+pk_retina$conc_wt <- (pk_retina$raw_conc/pk_retina$tissue_weight)
+pk_retina
+
+
+test_out <- rosnerTest(pk_retina$raw_conc,
+  k = 20
+)
+test_out #remove observations from mouse 8AM 13M & 8AM 16M
+
+```
+
+```{r}
+bandp_pk_g <- read.csv("C:\\Users\\nikbe\\Documents\\Vigh Lab\\morphine_sex_differences\\genotype_comp_brain_plasma.csv", fileEncoding = 'UTF-8-BOM')
+bandp_pk_g
+
+brain_pk_g <- bandp_pk_g %>% filter(tissue != "plasma")
+brain_pk_g
+
+test_out2 <- rosnerTest(brain_pk_g$raw_conc,
+  k = 23
+)
+test_out2
+
+plasma_pk_g <- bandp_pk_g %>% filter(tissue != "brain")
+plasma_pk_g
+
+test_out3 <- rosnerTest(plasma_pk_g$raw_conc,
+  k = 23
+)
+test_out3
+
+pk_geno <- merge(brain_pk_g, pk_retina, all = T)
+#remove outliers
+pk_geno <- pk_geno %>% filter(!animal %in% c('8AM 13M', '8AM 16M'))
+pk_geno$log <- log(pk_geno$raw_conc)
+pk_geno
+
+
+SumStat_pkg <- dplyr::summarise(group_by(pk_geno, tissue, genotype),
+n = n(),
+mean_conc = mean(raw_conc),
+sd_conc = sd(raw_conc),
+se_conc = sd_conc/sqrt(n),
+mean_conc_wt = mean(conc_wt),
+sd_conc_wt = sd(conc_wt),
+se_conc_wt = sd_conc_wt/sqrt(n),
+log_conc = mean(log(raw_conc)),
+sd_conc_log = sd(log(raw_conc)),
+se_conc_log = sd_conc_log/sqrt(n),
+mean_wt = mean(body_wt),
+sd_wt = sd(body_wt),
+mean_dose = mean(dose),
+sd_dose = sd(dose),
+)
+SumStat_pkg
+
+
+pkg <- ggplot() + 
+  geom_bar(data=SumStat_pkg, aes(x=tissue, y=mean_conc, fill=genotype), stat="identity", position=position_dodge(width=0.5), width=0.5) + geom_point(data=pk_geno, aes(x=tissue, y=raw_conc, fill=genotype), position=position_dodge(width=0.5)) + geom_errorbar(data=SumStat_pkg, aes(x=tissue,ymin=mean_conc - se_conc, ymax=mean_conc + se_conc, fill=genotype), position=position_dodge(width=0.5), width=.2,)  + 
+  scale_y_continuous(name="Morphine concentration (ng/mL)") +
+  scale_fill_manual(values=c("blue", "red4"))
+pkg
+
+ggsave(file="pkg.svg", plot=pkg, width=6, height=4)
+
+pk_geno$genotype <- as.factor(pk_geno$genotype)
+pk_geno$tissue <- as.factor(pk_geno$tissue)
+
+lmer_geno <- lmer(raw_conc ~ genotype*tissue+(1|animal), data=pk_geno)
+plot(lmer_geno, type=c("p","smooth"), col.line=1)
+lattice::qqmath(lmer_geno)
+shapiro.test(resid(lmer_geno))
+Anova(lmer_geno)
+emmeans::emmeans(lmer_geno, pairwise ~ genotype| tissue)
+```
+
