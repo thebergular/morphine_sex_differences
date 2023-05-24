@@ -1,0 +1,43 @@
+animal,retina,raw_conc,tissue_weight,body_wt,ZT,genotype,sex,dose,tissue
+8AM 10M,RR,146.346,4.1,29.7,1,WT,male,20.2,retina
+8AM 10M,LR,129.776,3.9,29.7,1,WT,male,20.2,retina
+8AM 11M,RR,113.197,3.7,31.3,1,WT,male,19.2,retina
+8AM 11M,LR,133.097,3.2,31.3,1,WT,male,19.2,retina
+8AM 12M,RR,135.451,3.6,33.3,1,WT,male,18,retina
+8AM 12M,LR,138.569,4,33.3,1,WT,male,18,retina
+8AM 13M,RR,275.259,3.8,30.2,1,WT,male,19.9,retina
+8AM 13M,LR,320.475,3.5,30.2,1,WT,male,19.9,retina
+8AM 16M,RR,258.12,4.4,28.4,1,WT,male,21.1,retina
+8AM 16M,LR,152.955,4.6,28.4,1,WT,male,21.1,retina
+8AM 17M,RR,82.393,4.3,27.5,1,WT,male,21.8,retina
+8AM 17M,LR,113.056,4.4,27.5,1,WT,male,21.8,retina
+8AM 21M,RR,127.363,3.7,30.5,1,WT,male,19.7,retina
+8AM 21M,LR,146.83,4.5,30.5,1,WT,male,19.7,retina
+8AM 22M,RR,126.579,4.1,30.8,1,WT,male,19.5,retina
+8AM 22M,LR,156.909,5.7,30.8,1,WT,male,19.5,retina
+8AM 23M,RR,154.987,5.7,29.8,1,WT,male,20.1,retina
+8AM 23M,LR,187.514,4.3,29.8,1,WT,male,20.1,retina
+8AM 24M,RR,85.269,4.7,26.5,1,WT,male,20.4,retina
+8AM 24M,LR,106.413,5.5,26.5,1,WT,male,20.4,retina
+8AM 25M,RR,72.322,4.3,27.7,1,WT,male,19.5,retina
+8AM 25M,LR,100.85,5.3,27.7,1,WT,male,19.5,retina
+8AM 26M,RR,97.481,5.7,28.3,1,WT,male,19.1,retina
+8AM 26M,LR,111.931,5,28.3,1,WT,male,19.1,retina
+8AM 27M,RR,107.666,5.4,26.7,1,WT,male,20.2,retina
+8AM 27M,LR,96.378,5.5,26.7,1,WT,male,20.2,retina
+8AM 28M,RR,124.944,4.2,27.6,1,WT,male,19.6,retina
+8AM 28M,LR,118.141,4.4,27.6,1,WT,male,19.6,retina
+8AM 29M,RR,52.887,4.4,27.9,1,WT,male,19.4,retina
+8AM 29M,LR,51.172,5.1,27.9,1,WT,male,19.4,retina
+8AM 30M,RR,124.016,3.8,25.8,1,WT,male,20.9,retina
+8AM 30M,LR,160.078,4.7,25.8,1,WT,male,20.9,retina
+8AM 31M,RR,87.232,4.5,26.2,1,WT,male,20.6,retina
+1M,RR,104.7333,3.8,27.2,1,Muflox,male,20.6,retina
+2M,RR,86.2347,5,30.1,1,Muflox,male,18.6,retina
+3M,RR,98.7759,4,28.7,1,Muflox,male,19.5,retina
+4M,RR,88.3202,4,25.8,1,Muflox,male,21.7,retina
+5M,RR,99.2028,4.3,26.1,1,Muflox,male,20.0,retina
+6M,RR,97.7141,7,27.3,1,Muflox,male,19.1,retina
+7M,RR,99.8877,5.2,26.2,1,Muflox,male,19.9,retina
+8M,RR,119.6988,5.7,23.7,1,Muflox,male,22.0,retina
+9M,RR,74.6145,5.7,27.2,1,Muflox,male,19.2,retina
